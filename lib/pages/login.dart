@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 // import 'package:food_delivery_app/pages/bottom_nav.dart';
-// import 'package:food_delivery_app/pages/signup.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:branch_comm/pages/home.dart';
+import 'package:branch_comm/pages/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:branch_comm/services/widget_support.dart';
 
 
@@ -20,76 +21,76 @@ class _LoginState extends State<Login> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // userLogin() async {
-  //   try {
+  userLogin() async {
+    try {
 
-  //     await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
 
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         backgroundColor: Colors.green,
-  //         content: Text(
-  //           "User Login Successfully",
-  //           style: TextStyle(
-  //             fontSize: 18,
-  //             fontWeight: FontWeight.bold,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //         duration: Duration(seconds: 4),
-  //       ),
-  //     );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text(
+            "User Login Successfully",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          duration: Duration(seconds: 4),
+        ),
+      );
 
-  //     // Navigator.push(
-  //     //   context,
-  //     //   MaterialPageRoute(
-  //     //     builder: (context) => BottomNav(),
-  //     //   ),
-  //     // );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(),
+        ),
+      );
 
-  //   } on FirebaseException catch (e) {
-  //     if (e.code == 'user-not-found') {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "No user found for that email.",
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               backgroundColor: Colors.red,
-  //               color: Colors.white,
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     } else if (e.code == 'wrong-password') {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "Wrong password provided for that user.",
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               backgroundColor: Colors.red,
-  //               color: Colors.white,
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     } else if (e.code == 'invalid-email') {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "The email address is badly formatted.",
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               backgroundColor: Colors.red,
-  //               color: Colors.white,
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
+    } on FirebaseException catch (e) {
+      if (e.code == 'user-not-found') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "No user found for that email.",
+              style: TextStyle(
+                fontSize: 18,
+                backgroundColor: Colors.red,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      } else if (e.code == 'wrong-password') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Wrong password provided for that user.",
+              style: TextStyle(
+                fontSize: 18,
+                backgroundColor: Colors.red,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      } else if (e.code == 'invalid-email') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "The email address is badly formatted.",
+              style: TextStyle(
+                fontSize: 18,
+                backgroundColor: Colors.red,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +219,7 @@ class _LoginState extends State<Login> {
                             email = emailController.text.trim();
                             password = passwordController.text.trim();
                             if (email != null && password != null) {
-                              //userLogin();
+                              userLogin();
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -262,12 +263,12 @@ class _LoginState extends State<Login> {
                             const SizedBox(width: 10),
                             GestureDetector(
                               onTap: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => SignUp(),
-                                //   ),
-                                // );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SignUp(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 "SignUp",

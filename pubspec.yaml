@@ -38,6 +38,7 @@ dependencies:
   cloud_firestore:
   firebase_core: 
   firebase_auth:
+  random_string:
   provider: ^6.0.5
   intl: ^0.18.1
   flutter_svg: ^2.0.7
