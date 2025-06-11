@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:branch_comm/pages/login.dart';
+import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:firebase_core/firebase_core.dart';
 //import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
       ),
       //home: const MyHomePage(title: 'Flutter Demo Home Page'),
 
-      home: Login(),
+      home: SignIn(),
     );
   }
 }

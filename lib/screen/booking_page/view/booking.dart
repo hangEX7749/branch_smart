@@ -26,7 +26,7 @@ class _BookingState extends State<Booking> {
 
     if (id == null || name == null) {
       // User not logged in or prefs not set
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/sigin');
     } else {
       setState(() {});
     }

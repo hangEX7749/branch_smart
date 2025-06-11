@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 // import 'package:food_delivery_app/pages/bottom_nav.dart';
-import 'package:branch_comm/pages/home.dart';
-import 'package:branch_comm/pages/signup.dart';
+import 'package:branch_comm/screen/home_page/view/home.dart';
+import 'package:branch_comm/screen/sign_up/view/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:branch_comm/services/widget_support.dart';
 
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class SignIn extends StatefulWidget {
+  const SignIn({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<SignIn> createState() => _SignInState();
 }
 
-class _LoginState extends State<Login> {
+class _SignInState extends State<SignIn> {
 
   String? email, password;
   TextEditingController emailController = TextEditingController(); 
@@ -21,7 +21,7 @@ class _LoginState extends State<Login> {
 
   final _formKey = GlobalKey<FormState>();
 
-  userLogin() async {
+  userSignIn() async {
     try {
 
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
@@ -30,7 +30,7 @@ class _LoginState extends State<Login> {
         SnackBar(
           backgroundColor: Colors.green,
           content: Text(
-            "User Login Successfully",
+            "User SignIn Successfully",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -219,7 +219,7 @@ class _LoginState extends State<Login> {
                             email = emailController.text.trim();
                             password = passwordController.text.trim();
                             if (email != null && password != null) {
-                              userLogin();
+                              userSignIn();
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

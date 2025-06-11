@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 //import 'package:food_delivery_app/pages/bottom_nav.dart';
-import 'package:branch_comm/pages/login.dart';
+import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/database.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:branch_comm/services/widget_support.dart';
@@ -291,12 +291,12 @@ class _SignUpState extends State<SignUp> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Login(),
+                                      builder: (context) => SignIn(),
                                     ),
                                   );
                                 },
                                 child: Text(
-                                  "LogIn",
+                                  "SignIn",
                                   style: AppWidget.boldTextFieldStyle(),
                                 ),
                               )
