@@ -48,6 +48,7 @@ dependencies:
   http:
   flutter_dotenv: ^5.2.1
   shared_preferences:
+  lucide_icons:
 
 dev_dependencies:
   flutter_test:
