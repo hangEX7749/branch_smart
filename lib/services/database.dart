@@ -14,6 +14,20 @@ class DatabaseMethods {
     }
   }
 
+  Future<bool> editUserDetails(Map<String, dynamic> userInfoMap, String id) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(id)
+          .update(userInfoMap);
+
+      return true; // success
+    } catch (e) {
+      print("Error updating user info: $e");
+      return false; // failure
+    }
+  }
+
   Future addUserOrderDetails(Map<String, dynamic> userOrderMap, String id, String orderId) async {
     try {
       return await FirebaseFirestore.instance
@@ -73,6 +87,19 @@ class DatabaseMethods {
     } catch (e) {
       // ignore: avoid_print
       print(e.toString());
+    }
+  }
+
+  Future<bool> updateUserPassword(String password, String id) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(id)
+          .update({"password": password});
+      return true; // Success
+    } catch (e) {
+      print("Error updating password: $e");
+      return false; // Failure
     }
   }
 

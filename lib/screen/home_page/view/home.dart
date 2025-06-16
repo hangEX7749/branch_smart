@@ -1,5 +1,4 @@
-import 'package:branch_comm/screen/booking_page/view/booking.dart';
-import 'package:flutter/material.dart';
+import 'package:branch_comm/screen/home_page/utils/index.dart';
 //import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
 
 class Home extends StatefulWidget {
@@ -77,15 +76,9 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNav(
         currentIndex: 0,
-        selectedItemColor: Colors.indigo,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
-        ],
+        context: context, // pass context into the widget
       ),
     );
   }

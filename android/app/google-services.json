@@ -7,9 +7,28 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:487685048314:android:ae60cd06935f1465600643",
+        "mobilesdk_app_id": "1:487685048314:android:3d7a45654f05d6d7600643",
         "android_client_info": {
           "package_name": "com.example.branch_comm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkJW3mDiLJ_iUgzSsfx_orx3h_UCf7yTU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487685048314:android:ae60cd06935f1465600643",
+        "android_client_info": {
+          "package_name": "com.example.food_delivery_app"
         }
       },
       "oauth_client": [],

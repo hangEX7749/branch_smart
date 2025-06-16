@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async{
@@ -10,6 +11,7 @@ void main() async{
   //await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp();
+  FirebaseAuth.instance.setLanguageCode("en");
   
   runApp(const MyApp());
 }
