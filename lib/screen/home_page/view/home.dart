@@ -9,6 +9,28 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  String? name, id, email;
+
+  getTheSharedPref() async {
+    name = await SharedpreferenceHelper().getUserName();
+    id = await SharedpreferenceHelper().getUserId();
+    email = await SharedpreferenceHelper().getUserEmail();
+
+    if (id == null || name == null) {
+      // User not logged in or prefs not set
+      Navigator.pushReplacementNamed(context, '/signin');
+    } else {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTheSharedPref();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,7 +38,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        title: const Text('Welcome, John', style: TextStyle(color: Colors.black)),
+        title: Text('Welcome, ${name ?? ""}', style: const TextStyle(color: Colors.black)),
         actions: const [
           Icon(Icons.notifications_none, color: Colors.black),
           SizedBox(width: 16),
@@ -64,11 +86,18 @@ class _HomeState extends State<Home> {
                       MaterialPageRoute(builder: (_) => const Booking()),
                     );
                   }),
-                  _buildServiceTile(Icons.send, "Send"),
-                  _buildServiceTile(Icons.receipt_long, "Bills"),
-                  _buildServiceTile(Icons.phone_android, "Airtime"),
-                  _buildServiceTile(Icons.credit_card, "Cards"),
-                  _buildServiceTile(Icons.savings, "Savings"),
+                  _buildServiceTile(Icons.book_online, "Appointment", () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (_) => const Appointment()),
+                    // );
+                  }),
+                  _buildServiceTile(Icons.people_alt, "Members", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => MemberListPage()),
+                    );
+                  }),
                   _buildServiceTile(Icons.more_horiz, "More"),
                 ],
               ),

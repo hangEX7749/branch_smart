@@ -191,18 +191,4 @@ class DatabaseMethods {
       throw Exception("Failed to fetch user orders: $e");
     }
   }
-
-  Future<QuerySnapshot> search(String updatedname) async {
-    try {
-      return await FirebaseFirestore.instance
-          .collection("Food")
-          .where("SearchKey", 
-            isEqualTo: updatedname.substring(0, 1).toUpperCase())
-          .get();
-    } catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
-      throw Exception("Failed to fetch user orders: $e");
-    }
-  }
 }

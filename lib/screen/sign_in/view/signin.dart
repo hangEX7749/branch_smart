@@ -88,7 +88,33 @@ class _SignInState extends State<SignIn> {
             ),
           ),
         );
-      }
+      } else if (e.code == 'network-request-failed') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Network error, please check your connection.",
+              style: TextStyle(
+                fontSize: 18,
+                backgroundColor: Colors.red,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "An unexpected error occurred. Please try again.",
+              style: TextStyle(
+                fontSize: 18,
+                backgroundColor: Colors.red,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      } 
     }
   }
 

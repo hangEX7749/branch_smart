@@ -61,8 +61,6 @@ class _SignUpState extends State<SignUp> {
           ),
         );
 
-        //Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNav()));
-
       } on FirebaseException catch (e) {
         if (e.code == 'weak-password') {
           ScaffoldMessenger.of(context).showSnackBar(
