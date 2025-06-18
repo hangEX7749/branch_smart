@@ -26,7 +26,8 @@ class _SignUpState extends State<SignUp> {
   registration() async {
     if (password!=null && email!=null && name!=null) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email!,
           password: password!,
         );

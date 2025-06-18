@@ -50,6 +50,8 @@ dependencies:
   shared_preferences:
   lucide_icons:
   connectivity_plus: ^6.1.4
+  image_picker: ^1.1.2
+  firebase_storage: ^12.4.7
 
 dev_dependencies:
   flutter_test:

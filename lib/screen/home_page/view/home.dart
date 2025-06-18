@@ -97,6 +97,12 @@ class _HomeState extends State<Home> {
                       context,
                       MaterialPageRoute(builder: (_) => MemberListPage()),
                     );
+                  }),                  
+                  _buildServiceTile(Icons.chat_bubble_outline, "Community Wall", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => WallPage()),
+                    );
                   }),
                   _buildServiceTile(Icons.more_horiz, "More"),
                 ],
