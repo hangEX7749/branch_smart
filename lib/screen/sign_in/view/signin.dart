@@ -1,10 +1,12 @@
+import 'package:branch_comm/services/database.dart';
+import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
 // import 'package:food_delivery_app/pages/bottom_nav.dart';
 import 'package:branch_comm/screen/home_page/view/home.dart';
 import 'package:branch_comm/screen/sign_up/view/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:branch_comm/services/widget_support.dart';
-
+import 'package:branch_comm/services/user_auth_data.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -25,6 +27,22 @@ class _SignInState extends State<SignIn> {
     try {
 
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
+      var user_data = await UserAuthData().getUserData(email!);
+
+      //print(user_data);
+
+      Map<String, dynamic> userInfoMap = {
+        "name": 'sfgj',
+        "email": email,
+        "password": password,
+        "id": 'asdad',
+        "wallet": "0",
+      };
+
+      await SharedpreferenceHelper().saveUserEmail(email!);
+      await SharedpreferenceHelper().saveUserName(userInfoMap["name"]);
+      await SharedpreferenceHelper().saveUserId(userInfoMap["id"]);
+
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

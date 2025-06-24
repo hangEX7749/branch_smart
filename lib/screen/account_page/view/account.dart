@@ -1,4 +1,5 @@
 import 'package:branch_comm/screen/account_page/utils/index.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Account extends StatefulWidget {
   const Account({super.key});
@@ -10,6 +11,11 @@ class _AccountState extends State<Account> {
   String? name, email, userId, password;
   bool isEditingInfo = false;
   bool isChangingPassword = false;
+
+  // Image picker variables
+  File? _imageFile;
+  String? profilePicUrl;
+  final ImagePicker _picker = ImagePicker();
 
   // Password visibility flags
   bool obscureCurrent = true;
@@ -34,6 +40,8 @@ class _AccountState extends State<Account> {
     userId = await SharedpreferenceHelper().getUserId();
     email = await SharedpreferenceHelper().getUserEmail();
 
+    print("name: $name, userId: $userId, email: $email");
+
     if (userId == null || name == null) {
       // User not logged in or prefs not set
       //Navigator.pushReplacementNamed(context, '/sigin');
@@ -47,39 +55,41 @@ class _AccountState extends State<Account> {
     });
   }
 
-  void _logout() {
-    showDialog(
+  void _logout() async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Logout"),
         content: Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close the dialog first
-
-              // Step 1: Sign out from Firebase
-              await FirebaseAuth.instance.signOut();
-
-              // Step 2: Navigate to sign-in and clear back stack
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => SignIn()), // Replace with your sign-in widget
-                (route) => false, // Remove all previous routes
-              );
-
-              // Optional: show confirmation if needed
-              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Logged out")));
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: Text("Logout"),
           ),
         ],
       ),
     );
+
+    if (confirmed != true) return;
+
+    // Step 1: Sign out
+    await FirebaseAuth.instance.signOut();
+    debugPrint("Current user after logout: ${FirebaseAuth.instance.currentUser?.uid}");
+    // Step 2: Clear local data (if any)
+    await SharedpreferenceHelper().clearAllPref();
+
+    // Step 3: Navigate to SignIn and reset stack
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => SignIn()),
+        (route) => false,
+      );
+    }
   }
 
   void _saveUserInfo() async {
@@ -89,7 +99,7 @@ class _AccountState extends State<Account> {
       // Add other fields as needed
     };
 
-    final dbMethods = DatabaseMethods();
+    final dbMethods = UserService();
     final success = await dbMethods.editUserDetails(userInfoMap, userId!);
 
     if (success) {
@@ -138,7 +148,7 @@ class _AccountState extends State<Account> {
       await user.updatePassword(newPassword);
 
       // Update user details in Firestore
-      final dbMethods = DatabaseMethods();
+      final dbMethods = UserService();
       final success = await dbMethods.updateUserPassword(newPassword, userId!);
 
       if (!success) {
@@ -179,6 +189,34 @@ class _AccountState extends State<Account> {
     }
   }
   
+  Future<void> _pickAndUploadImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final savedFile = await _saveImageLocally(pickedFile);
+      final fileName = 'profile_${userId}.jpg';
+
+      final dbMethods = UserService();
+      await dbMethods.editUserDetails({'profilePic': fileName}, userId!);
+
+      setState(() {
+        _imageFile = savedFile;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile picture updated locally')),
+      );
+    }
+  }
+
+
+  Future<File> _saveImageLocally(XFile pickedFile) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final fileName = 'profile_${userId}.jpg';
+    final savedImage = await File(pickedFile.path).copy('${appDir.path}/$fileName');
+    return savedImage;
+  }
+
   Widget _buildUserInfoSection() {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -308,6 +346,31 @@ class _AccountState extends State<Account> {
     );
   }
 
+  Future<Widget> _buildProfilePicture() async {
+    final localPath = '${(await getApplicationDocumentsDirectory()).path}/profile_${userId}.jpg';
+    final localFile = File(localPath);
+    final fileExists = localFile.existsSync();
+
+    return Center(
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 50,
+            backgroundImage: fileExists
+                ? FileImage(localFile)
+                : AssetImage('images/boy.jpg') as ImageProvider,
+          ),
+          TextButton.icon(
+            onPressed: _pickAndUploadImage,
+            icon: Icon(Icons.edit),
+            label: Text("Change Profile Picture"),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget _buildLogoutButton() {
     return Center(
       child: ElevatedButton(
@@ -328,12 +391,32 @@ class _AccountState extends State<Account> {
 
   @override
   Widget build(BuildContext context) {
+    // Until userId is loaded from shared preferences, show loading
+    if (userId == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text("Account")),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text("Account")),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
+            FutureBuilder<Widget>(
+              future: _buildProfilePicture(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error loading profile picture'));
+                } else {
+                  return snapshot.data ?? SizedBox.shrink();
+                }
+              },
+            ), // This now uses local file
             _buildUserInfoSection(),
             _buildChangePasswordSection(),
             SizedBox(height: 20),
@@ -343,8 +426,9 @@ class _AccountState extends State<Account> {
       ),
       bottomNavigationBar: BottomNav(
         currentIndex: 2,
-        context: context, // pass context into the widget
+        context: context,
       ),
     );
   }
+
 }

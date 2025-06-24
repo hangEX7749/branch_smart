@@ -17,8 +17,22 @@ class UserService {
     }
   }
 
+  Future<bool> updateProfilePic(String imageUrl, String id) async {
+    try {
+      await _users.doc(id).update({"profilePic": imageUrl});
+      return true;
+    } catch (e) {
+      print("Error updating profile picture: $e");
+      return false;
+    }
+  }
+
   Future<QuerySnapshot> getUserWalletByEmail(String email) async {
     return await _users.where("email", isEqualTo: email).get();
+  }
+
+  Future<QuerySnapshot> getUserById(String id) async {
+    return await _users.where("id", isEqualTo: id).get();
   }
 
   Future<void> updateUserWallet(String amount, String id) async {

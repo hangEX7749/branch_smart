@@ -7,6 +7,11 @@ class SharedpreferenceHelper {
   static const String userImageKey = 'USERIMAGEKEY';
   static const String userAddressKey = 'USERADDRESSKEY';
 
+  Future<bool> clearAllPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return await prefs.clear();
+  }
+
   Future<bool> saveUserId(String userId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return await prefs.setString(userIdKey, userId);

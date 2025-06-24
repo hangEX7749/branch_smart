@@ -1,4 +1,7 @@
 import 'package:branch_comm/screen/home_page/utils/index.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:branch_comm/services/user_auth_data.dart';
 //import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
 
 class Home extends StatefulWidget {
@@ -11,6 +14,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   String? name, id, email;
+  late Future<QuerySnapshot<Object?>> userData;
 
   getTheSharedPref() async {
     name = await SharedpreferenceHelper().getUserName();
@@ -28,6 +32,11 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    // Fetch user data from Firestore
+    //UserAuthData().getUserData(email);
+
+    //print(userData);
+
     getTheSharedPref();
   }
 
