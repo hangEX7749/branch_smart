@@ -1,3 +1,4 @@
+import 'package:branch_comm/screen/QR_scanner_page/view/qr_scanner_page.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/screen/home_page/view/home.dart';
 import 'package:branch_comm/screen/account_page/view/account.dart';
@@ -21,10 +22,10 @@ class BottomNav extends StatelessWidget {
         );
         break;
       case 1:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (_) => const HistoryPage()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const QRScannerPage()),
+        );
         break;
       case 2:
         Navigator.push(
@@ -44,7 +45,7 @@ class BottomNav extends StatelessWidget {
       onTap: _handleTap,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+        BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner), label: 'Scan'),
         BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
       ],
     );
