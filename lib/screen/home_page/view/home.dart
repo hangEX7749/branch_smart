@@ -20,10 +20,10 @@ class _HomeState extends State<Home> {
     name = await SharedpreferenceHelper().getUserName();
     id = await SharedpreferenceHelper().getUserId();
     email = await SharedpreferenceHelper().getUserEmail();
-
+    print("Name: $name, ID: $id, Email: $email");   
     if (id == null || name == null) {
       // User not logged in or prefs not set
-      Navigator.pushReplacementNamed(context, '/signin');
+      //Navigator.pushReplacementNamed(context, '/signin');
     } else {
       setState(() {});
     }

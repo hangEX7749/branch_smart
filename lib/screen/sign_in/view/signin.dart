@@ -25,114 +25,71 @@ class _SignInState extends State<SignIn> {
 
   userSignIn() async {
     try {
-
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
-      var user_data = await UserAuthData().getUserData(email!);
+      var userData = await UserAuthData().getUserData(email!);
 
-      //print(user_data);
+      if (userData.docs.isNotEmpty) {
+        var userDoc = userData.docs.first;
+        var data = userDoc.data() as Map<String, dynamic>;
 
-      Map<String, dynamic> userInfoMap = {
-        "name": 'sfgj',
-        "email": email,
-        "password": password,
-        "id": 'asdad',
-        "wallet": "0",
-      };
+        Map<String, dynamic> userInfoMap = {
+          "name": data["name"] ?? 'unknown',
+          "email": data["email"] ?? email,
+          "password": password,
+          "id": userDoc.id, // <-- correct way
+          "wallet": data["wallet"] ?? "0",
+        };
 
-      await SharedpreferenceHelper().saveUserEmail(email!);
-      await SharedpreferenceHelper().saveUserName(userInfoMap["name"]);
-      await SharedpreferenceHelper().saveUserId(userInfoMap["id"]);
+        await SharedpreferenceHelper().saveUserEmail(email!);
+        await SharedpreferenceHelper().saveUserName(userInfoMap["name"]);
+        await SharedpreferenceHelper().saveUserId(userDoc.id); // <-- fix here too
 
+        print(userInfoMap);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.green,
+            content: Text(
+              "User SignIn Successfully",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            duration: Duration(seconds: 4),
+          ),
+        );
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+          (route) => false, // Remove all previous routes
+        );
+
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("No user data found for the email: $email"),
+          ),
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (!mounted) return;
+
+      String errorMsg = "An unexpected error occurred.";
+      if (e.code == 'user-not-found') {
+        errorMsg = "No user found for that email.";
+      } else if (e.code == 'wrong-password') {
+        errorMsg = "Wrong password provided.";
+      } else if (e.code == 'invalid-email') {
+        errorMsg = "The email address is badly formatted.";
+      } else if (e.code == 'network-request-failed') {
+        errorMsg = "Network error, please check your connection.";
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.green,
-          content: Text(
-            "User SignIn Successfully",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(seconds: 4),
-        ),
+        SnackBar(content: Text(errorMsg)),
       );
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Home(),
-        ),
-      );
-
-    } on FirebaseException catch (e) {
-      if (e.code == 'user-not-found') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "No user found for that email.",
-              style: TextStyle(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      } else if (e.code == 'wrong-password') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Wrong password provided for that user.",
-              style: TextStyle(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      } else if (e.code == 'invalid-email') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "The email address is badly formatted.",
-              style: TextStyle(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      } else if (e.code == 'network-request-failed') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Network error, please check your connection.",
-              style: TextStyle(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "An unexpected error occurred. Please try again.",
-              style: TextStyle(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      } 
     }
   }
 
@@ -307,6 +264,12 @@ class _SignInState extends State<SignIn> {
                             const SizedBox(width: 10),
                             GestureDetector(
                               onTap: () {
+
+                                setState(() {
+                                  email = emailController.text;
+                                  password = passwordController.text;
+                                });
+
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
