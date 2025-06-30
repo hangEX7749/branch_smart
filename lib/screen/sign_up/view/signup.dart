@@ -1,9 +1,9 @@
+import 'package:branch_comm/model/Member.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 //import 'package:food_delivery_app/pages/bottom_nav.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/database.dart';
-import 'package:branch_comm/services/shared_pref.dart';
 import 'package:branch_comm/services/widget_support.dart';
 import 'package:random_string/random_string.dart';
 
@@ -40,12 +40,28 @@ class _SignUpState extends State<SignUp> {
           "password": password,
           "id": userId,
           "wallet": "0",
+          "status":  Member.active,
+          "createdAt": DateTime.now().toIso8601String(), 
+          "updatedAt": DateTime.now().toIso8601String(),
         };
 
-        await SharedpreferenceHelper().saveUserEmail(email!);
-        await SharedpreferenceHelper().saveUserName(nameController.text);
-        await SharedpreferenceHelper().saveUserId(userId);
-        await DatabaseMethods().addUserDetails(userInfoMap, userId);
+
+        var proceed = await DatabaseMethods().addUserDetails(userInfoMap, userId);
+
+        if (!mounted) return;
+        if (!proceed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.redAccent,
+              content: Text(
+                "Error in registration, please try again.",
+                style: AppWidget.simpleTextFieldStyle(),
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

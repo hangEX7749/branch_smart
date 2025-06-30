@@ -1,4 +1,3 @@
-import 'package:branch_comm/services/database.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
 // import 'package:food_delivery_app/pages/bottom_nav.dart';
@@ -21,8 +20,6 @@ class _SignInState extends State<SignIn> {
   TextEditingController emailController = TextEditingController(); 
   TextEditingController passwordController = TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
-
   userSignIn() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
@@ -32,19 +29,23 @@ class _SignInState extends State<SignIn> {
         var userDoc = userData.docs.first;
         var data = userDoc.data() as Map<String, dynamic>;
 
-        Map<String, dynamic> userInfoMap = {
-          "name": data["name"] ?? 'unknown',
-          "email": data["email"] ?? email,
-          "password": password,
-          "id": userDoc.id, // <-- correct way
-          "wallet": data["wallet"] ?? "0",
-        };
+        // Save user data to shared preferences
+        bool saved = await SharedpreferenceHelper().saveUserData(
+          userId: userDoc.id,
+          userName: data["name"] ?? 'unknown',
+          userEmail: email!,
+          //userImage: 'path/to/image.jpg', // Optional
+        );
 
-        await SharedpreferenceHelper().saveUserEmail(email!);
-        await SharedpreferenceHelper().saveUserName(userInfoMap["name"]);
-        await SharedpreferenceHelper().saveUserId(userDoc.id); // <-- fix here too
-
-        print(userInfoMap);
+        if (!mounted) return;
+        if (!saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Failed to save pref user data."),
+            ),
+          );
+          return;
+        }
 
         if (!mounted) return;
 
