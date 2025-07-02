@@ -12,7 +12,7 @@ class UserService {
       await _users.doc(id).update(data);
       return true;
     } catch (e) {
-      print("Error updating user info: $e");
+      //print("Error updating user info: $e");
       return false;
     }
   }
@@ -22,7 +22,7 @@ class UserService {
       await _users.doc(id).update({"profilePic": imageUrl});
       return true;
     } catch (e) {
-      print("Error updating profile picture: $e");
+      //print("Error updating profile picture: $e");
       return false;
     }
   }
@@ -44,7 +44,7 @@ class UserService {
       await _users.doc(id).update({"password": password});
       return true;
     } catch (e) {
-      print("Error updating password: $e");
+      //print("Error updating password: $e");
       return false;
     }
   }

@@ -28,7 +28,7 @@ class Member {
       case inactive:
         return 'Inactive';
       default:
-        return 'Unknown';
+        return 'Error';
     }
   }
 

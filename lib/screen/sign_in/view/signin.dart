@@ -36,6 +36,7 @@ class _SignInState extends State<SignIn> {
           userEmail: email!,
           //userImage: 'path/to/image.jpg', // Optional
         );
+        
 
         if (!mounted) return;
         if (!saved) {
@@ -48,23 +49,28 @@ class _SignInState extends State<SignIn> {
         }
 
         if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            content: Text(
-              "User SignIn Successfully",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        
+        if (saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green,
+              content: Text(
+                "User SignIn Successfully",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              duration: Duration(seconds: 4),
             ),
-            duration: Duration(seconds: 4),
-          ),
-        );
+          );
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => Home()),
-          (route) => false, // Remove all previous routes
-        );
+          await Future.delayed(const Duration(milliseconds: 100)); // Short delay
+          
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => Home()),
+            (route) => false, // Remove all previous routes
+          );
+        }
 
       } else {
         if (!mounted) return;

@@ -1,7 +1,6 @@
-import 'package:branch_comm/model/Member.dart';
+import 'package:branch_comm/model/member_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-//import 'package:food_delivery_app/pages/bottom_nav.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/database.dart';
 import 'package:branch_comm/services/widget_support.dart';

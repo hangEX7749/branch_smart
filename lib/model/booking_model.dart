@@ -1,23 +1,39 @@
 class BookingModel {
-  String? bookingType;
+  String id;
+  String? amenity;
   String? time;
+  String? date;
+  String? userId;
   String? status;
-  // int quantity;
+  // String? createdAt;
+  // String? updatedAt;
 
-  // BurgerModel({
-  //   required this.name,
-  //   required this.image,
-  //   required this.price,
-  //   this.quantity = 0,
-  // });
+  // Predefined status codes
+  static const String active = '10';
+  static const String pending = '30';
+  static const String inactive = '90';
 
-  // void incrementQuantity() {
-  //   quantity++;
-  // }
+  BookingModel({
+    required this.id,
+    required this.amenity,
+    required this.time,
+    required this.date,
+    required this.userId,
+    required this.status,
+  });
 
-  // void decrementQuantity() {
-  //   if (quantity > 0) {
-  //     quantity--;
-  //   }
-  // }
+  String getStatusName() {
+    switch (status) {
+      case active:
+        return 'Completed';
+      case pending:
+        return 'Pending';
+      case inactive:
+        return 'Failed';
+      default:
+        return 'Error';
+    }
+  }
 }
+
+

@@ -1,4 +1,4 @@
-import 'package:branch_comm/model/Member.dart';
+import 'package:branch_comm/model/member_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedpreferenceHelper {

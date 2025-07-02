@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
@@ -9,7 +11,7 @@ class DatabaseMethods {
           .doc(id)
           .set(userInfoMap);
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
@@ -35,7 +37,7 @@ class DatabaseMethods {
           .doc(id).collection("Orders").doc(orderId)
           .set(userOrderMap);
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
@@ -46,20 +48,20 @@ class DatabaseMethods {
           .collection("Orders").doc(orderId)
           .set(userOrderMap);
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
 
   Future<Stream<QuerySnapshot>> getUserOrders(String id) async {
     try {
-      return await FirebaseFirestore.instance
+      return FirebaseFirestore.instance
           .collection("users")
           .doc(id)
           .collection("Orders")
           .snapshots();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
@@ -72,7 +74,7 @@ class DatabaseMethods {
           .where("email", isEqualTo: email)
           .get();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
       throw Exception("Failed to fetch user email: $e");
     }
@@ -85,7 +87,7 @@ class DatabaseMethods {
           .doc(id)
           .update({"wallet":amount});
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
@@ -105,12 +107,12 @@ class DatabaseMethods {
 
   Future<Stream<QuerySnapshot>> getAdminOrders() async {
     try {
-      return await FirebaseFirestore.instance
+      return FirebaseFirestore.instance
           .collection("Orders")
           .where("Status", isEqualTo: "Pending")
           .snapshots();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
@@ -123,7 +125,7 @@ class DatabaseMethods {
           .doc(id)
           .update({"Status":"Delivered"});
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
@@ -137,18 +139,18 @@ class DatabaseMethods {
           .doc(docid)
           .update({"Status":"Delivered"});
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
 
   Future<Stream<QuerySnapshot>> getAllUsers() async {
     try {
-      return await FirebaseFirestore.instance
+      return FirebaseFirestore.instance
           .collection("users")
           .snapshots();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
@@ -161,7 +163,7 @@ class DatabaseMethods {
           .doc(id)
           .delete();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
@@ -173,20 +175,20 @@ class DatabaseMethods {
           .doc(id).collection("Transaction")
           .add(userOrderMap);
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
     }
   }
 
   Future<Stream<QuerySnapshot>> getUserTransaction(String id) async {
     try {
-      return await FirebaseFirestore.instance
+      return FirebaseFirestore.instance
           .collection("users")
           .doc(id)
           .collection("Transaction")
           .snapshots();
     } catch (e) {
-      // ignore: avoid_print
+      
       print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }

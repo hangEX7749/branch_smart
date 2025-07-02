@@ -1,6 +1,9 @@
+import 'package:branch_comm/screen/booking_page/view/view_booking.dart';
+import 'package:branch_comm/services/database/booking_service.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:random_string/random_string.dart';
 
 class Booking extends StatefulWidget {
   const Booking({super.key});
@@ -10,30 +13,29 @@ class Booking extends StatefulWidget {
 }
 
 class _BookingState extends State<Booking> {
-
   String? name, id, email;
   String? selectedAmenity;
   DateTime? selectedDate;
   String? selectedTime;
 
+  final BookingService bookingService = BookingService();
   final List<String> amenities = ['Badminton Court', 'BBQ Area'];
   final List<String> timeSlots = ['9:00 AM', '11:00 AM', '2:00 PM', '5:00 PM'];
 
-  getTheSharedPref() async {
-    name = await SharedpreferenceHelper().getUserName();
-    id = await SharedpreferenceHelper().getUserId();
-    email = await SharedpreferenceHelper().getUserEmail();
+  Future<void> getTheSharedPref() async {
+    final user = await SharedpreferenceHelper().getUser();
 
-    if (id == null || name == null) {
-      // User not logged in or prefs not set
-      Navigator.pushReplacementNamed(context, '/sigin');
+    if (!mounted) return;
+
+    if (user.id.isEmpty || user.name.isEmpty) {
+      Navigator.pushReplacementNamed(context, '/signin');
     } else {
-      setState(() {});
+      setState(() {
+        id = user.id;
+        name = user.name;
+        email = user.email;
+      });
     }
-
-    setState(() {
-      
-    });
   }
 
   @override
@@ -45,29 +47,22 @@ class _BookingState extends State<Booking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Book Facility'),
-      ),
+      appBar: AppBar(title: const Text('Book Facility')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Amenity Dropdown
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Select Amenity'),
               value: selectedAmenity,
-              items: amenities.map((e) {
-                return DropdownMenuItem(value: e, child: Text(e));
-              }).toList(),
+              items: amenities
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (value) {
-                setState(() {
-                  selectedAmenity = value;
-                });
+                setState(() => selectedAmenity = value);
               },
             ),
             const SizedBox(height: 16),
-
-            // Date Picker
             TextFormField(
               readOnly: true,
               decoration: const InputDecoration(labelText: 'Select Date'),
@@ -84,51 +79,44 @@ class _BookingState extends State<Booking> {
                   lastDate: DateTime.now().add(const Duration(days: 30)),
                 );
                 if (picked != null) {
-                  setState(() {
-                    selectedDate = picked;
-                  });
+                  setState(() => selectedDate = picked);
                 }
               },
             ),
             const SizedBox(height: 16),
-
-            // Time Slot Dropdown
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Select Time Slot'),
               value: selectedTime,
-              items: timeSlots.map((e) {
-                return DropdownMenuItem(value: e, child: Text(e));
-              }).toList(),
+              items: timeSlots
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (value) {
-                setState(() {
-                  selectedTime = value;
-                });
+                setState(() => selectedTime = value);
               },
             ),
             const SizedBox(height: 32),
-
             ElevatedButton(
               onPressed: () async {
                 if (selectedAmenity != null &&
                     selectedDate != null &&
-                    selectedTime != null) {
+                    selectedTime != null &&
+                    id != null) {
                   final dateOnly = DateTime(
                     selectedDate!.year,
                     selectedDate!.month,
                     selectedDate!.day,
-                  ).toIso8601String();
+                  ).toIso8601String().split('T')[0]; // e.g., 2025-06-18
 
                   try {
-                    // 1. Query for existing booking with same values
-                    final query = await FirebaseFirestore.instance
-                        .collection('bookings')
-                        .where('amenity', isEqualTo: selectedAmenity)
-                        .where('date', isEqualTo: dateOnly)
-                        .where('time', isEqualTo: selectedTime)
-                        .get();
+                    final query = await bookingService.checkBooking(
+                      selectedAmenity!,
+                      dateOnly,
+                      selectedTime!,
+                    );
+
+                    if (!context.mounted) return;
 
                     if (query.docs.isNotEmpty) {
-                      // 2. Duplicate exists
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(
                           '$selectedAmenity is already booked on ${selectedDate!.day}/${selectedDate!.month} at $selectedTime.',
@@ -137,20 +125,39 @@ class _BookingState extends State<Booking> {
                       return;
                     }
 
-                    // 3. No duplicate, proceed to save
-                    await FirebaseFirestore.instance.collection('bookings').add({
+                    String bookingId = randomMerge('book_', randomAlphaNumeric(10));
+                    
+                    // New booking data
+                    Map<String, dynamic> bookingMap = {
+                      'id': bookingId,
+                      'user_id': id,
                       'amenity': selectedAmenity,
                       'date': dateOnly,
                       'time': selectedTime,
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
+                      'status': 50, 
+                      'created_at': FieldValue.serverTimestamp(),
+                      'updated_at': FieldValue.serverTimestamp(),
+                    };
 
+                    final proceed = await bookingService.addBooking(bookingMap, bookingId);
+                    
+                    if (!context.mounted) return;
+
+                    if (!proceed) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Booking failed. Try again.'),
+                        ),
+                      );
+                      return;
+                    }
+                   
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(
-                          'Booked $selectedAmenity on ${selectedDate!.day}/${selectedDate!.month} at $selectedTime'),
+                        'Booked $selectedAmenity on ${selectedDate!.day}/${selectedDate!.month} at $selectedTime',
+                      ),
                     ));
 
-                    // Clear form (optional)
                     setState(() {
                       selectedAmenity = null;
                       selectedDate = null;
@@ -158,7 +165,9 @@ class _BookingState extends State<Booking> {
                     });
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Booking failed. Try again.')),
+                      const SnackBar(
+                        content: Text('Booking failed. Try again.'),
+                      ),
                     );
                   }
                 } else {
@@ -169,7 +178,22 @@ class _BookingState extends State<Booking> {
               },
               child: const Text('Confirm Booking'),
             ),
-
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.lightBlue[800]
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ViewConfirmedBookingsPage(),
+                  ),
+                );
+              },
+              child: const Text('View Confirmed Bookings'),
+            ),
           ],
         ),
       ),

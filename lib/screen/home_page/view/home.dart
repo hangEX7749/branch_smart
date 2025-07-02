@@ -1,6 +1,4 @@
 import 'package:branch_comm/screen/home_page/utils/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
 
 class Home extends StatefulWidget {
@@ -15,17 +13,23 @@ class _HomeState extends State<Home> {
   String? name, id, email;
   late Future<QuerySnapshot<Object?>> userData;
 
-  getTheSharedPref() async {
+  Future<void> getTheSharedPref() async {
+    final startTime = DateTime.now();
 
-    await SharedPreferences.getInstance(); 
-    final user = await SharedpreferenceHelper().getUser();
+    Member user = Member(id: '', name: '', email: '');
+
+    // Keep checking every 100ms until data is available or timeout (e.g. 5 seconds)
+    while ((user.id.isEmpty || user.name.isEmpty) &&
+          DateTime.now().difference(startTime).inSeconds < 5) {
+      await Future.delayed(Duration(milliseconds: 100));
+      user = await SharedpreferenceHelper().getUser();
+    }
 
     //print("User: ${user.id}, ${user.name}, ${user.email}");
 
     if (!mounted) return;
 
     if (user.id.isEmpty || user.name.isEmpty) {
-      // User not logged in or prefs not set
       Navigator.pushReplacementNamed(context, '/signin');
     } else {
       setState(() {
@@ -36,6 +40,7 @@ class _HomeState extends State<Home> {
     }
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +48,9 @@ class _HomeState extends State<Home> {
     //UserAuthData().getUserData(email);
 
     //print(userData);
-
-    getTheSharedPref();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getTheSharedPref();
+    });
   }
 
   @override
