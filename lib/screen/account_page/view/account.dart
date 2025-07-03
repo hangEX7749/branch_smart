@@ -331,15 +331,17 @@ class _AccountState extends State<Account> {
                     child: Text("Change Password"),
                   ),
                   SizedBox(width: 10),
-                  TextButton(
+                  ElevatedButton(
                       onPressed: () => setState(() => isChangingPassword = false),
                       child: Text("Cancel")),
                 ],
               ),
             ] else
-              ElevatedButton(
-                  onPressed: () => setState(() => isChangingPassword = true),
-                  child: Text("Change Password")),
+              Center(
+                child: ElevatedButton(
+                    onPressed: () => setState(() => isChangingPassword = true),
+                    child: Text("Click to Change Password")),
+              ),
           ],
         ),
       ),
@@ -374,7 +376,10 @@ class _AccountState extends State<Account> {
   Widget _buildLogoutButton() {
     return Center(
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.red[800]
+        ),
         onPressed: _logout,
         child: Text("Logout"),
       ),
