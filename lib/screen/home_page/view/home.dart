@@ -109,10 +109,10 @@ class _HomeState extends State<Home> {
                     );
                   }),
                   _buildServiceTile(Icons.book_online, "Appointment", () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (_) => const Appointment()),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const Appointment()),
+                    );
                   }),
                   _buildServiceTile(Icons.people_alt, "Members", () {
                     Navigator.push(

@@ -1,0 +1,51 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class AppointmentService {
+  final _appointments = FirebaseFirestore.instance.collection("appointments");
+
+  Stream<QuerySnapshot> getUserAppointments(String userId) {
+    final now = Timestamp.now();
+    return _appointments
+        .where('user_id', isEqualTo: userId)
+        .where('invite_datetime', isGreaterThan: now)
+        //.where('status', isEqualTo: 10)
+        .orderBy('invite_datetime', descending: false)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getPastAppointments(String userId) {
+    final now = Timestamp.now();
+    return _appointments
+        .where('user_id', isEqualTo: userId)
+        .where('invite_datetime', isLessThan: now)
+        //.where('status', isEqualTo: 10)
+        .orderBy('invite_datetime', descending: true)
+        .snapshots();
+  }
+
+  Future<QuerySnapshot> checkAppointment(String guestName, DateTime inviteDateTime) async {
+    return _appointments
+        .where('guest_name', isEqualTo: guestName)
+        //.where('appointment_type', isEqualTo: 'invite')
+        .where('invite_datetime', isEqualTo: inviteDateTime)
+        .get();
+  }
+
+  Future<bool> addAppointment(Map<String, dynamic> appointmentMap, String appointmentId) async {
+    try {
+      await _appointments.doc(appointmentId).set(appointmentMap);
+      return true;
+    } catch (e) {
+      //print("Error adding appointment: $e");
+      return false;
+    }
+  }
+
+  Future<void> updateAppointment(String appointmentId, Map<String, dynamic> data) async {
+    await _appointments.doc(appointmentId).update(data);
+  }
+
+  Future<void> deleteAppointment(String appointmentId) async {
+    await _appointments.doc(appointmentId).delete();
+  }
+}

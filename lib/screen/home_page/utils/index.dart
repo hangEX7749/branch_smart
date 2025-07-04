@@ -1,5 +1,6 @@
 export 'package:branch_comm/screen/home_page/view/home.dart';
 export 'package:branch_comm/screen/booking_page/view/booking.dart';
+export 'package:branch_comm/screen/appointment_page/view/appointment.dart';
 export 'package:branch_comm/screen/account_page/view/account.dart';
 export 'package:branch_comm/screen/member_page/view/member_list.dart';
 export 'package:branch_comm/screen/wall_page/view/wall.dart';
