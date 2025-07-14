@@ -1,6 +1,6 @@
+import 'package:branch_comm/admin_screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
-// import 'package:food_delivery_app/pages/bottom_nav.dart';
 import 'package:branch_comm/screen/home_page/view/home.dart';
 import 'package:branch_comm/screen/sign_up/view/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,11 +37,10 @@ class _SignInState extends State<SignIn> {
           //userImage: 'path/to/image.jpg', // Optional
         );
         
-
         if (!mounted) return;
         if (!saved) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            SnackBar( 
               content: Text("Failed to save pref user data."),
             ),
           );
@@ -290,7 +289,26 @@ class _SignInState extends State<SignIn> {
                               ),
                             )
                           ],
-                        )
+                        ),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AdminSignIn()),
+                              );
+                            },
+                            child: const Text(
+                              "Login as Admin",
+                              style: TextStyle(
+                                color: Colors.deepOrange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
