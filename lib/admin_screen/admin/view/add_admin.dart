@@ -64,18 +64,24 @@ class _AddAdminState extends State<AddAdmin> {
             'email': email.trim(),
             'createdAt': FieldValue.serverTimestamp(),
           });
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Admin role added to Firestore.")),
+            );
+          }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Admin role added to Firestore.")),
-          );
         }
       } else if (e.code == 'weak-password') {
         errorMsg = 'Password too weak.';
       }
+      
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(errorMsg),
         backgroundColor: Colors.red,
       ));
+
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
