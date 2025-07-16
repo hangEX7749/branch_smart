@@ -48,4 +48,17 @@ class AppointmentService {
   Future<void> deleteAppointment(String appointmentId) async {
     await _appointments.doc(appointmentId).delete();
   }
+
+
+  //Admin
+  Stream<QuerySnapshot> getAllAppointments() {
+    return _appointments.orderBy('invite_datetime', descending: true).snapshots();
+  }
+
+  Future<void> updateAppointmentStatus(String appointmentId, int status) async {
+    await _appointments.doc(appointmentId).update({
+      'status': status,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
 }

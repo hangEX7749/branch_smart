@@ -38,8 +38,6 @@ class _AdminSignInState extends State<AdminSignIn> {
         adminStatus: data?['status'] ?? '',
       );
       
-      print(saved);
-      
       if (!mounted) return;
       if (!saved) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,4 @@
-class AppointmentModel {
+class Appointment {
 
   String id;
   String? guestName;
@@ -21,7 +21,7 @@ class AppointmentModel {
   static const int pending = 30;
   static const int failed = 50;
 
-  AppointmentModel({
+  Appointment({
     required this.id,
     this.guestName,
     this.contactNum,
@@ -46,6 +46,42 @@ class AppointmentModel {
         return 'Failed';
       default:
         return 'Error';
+    }
+  }
+
+  static const String allStatusLabel = 'All';
+  static final Map<String, int?> statusFilterOptions = {
+    allStatusLabel: null,
+    'Completed': completed,
+    'Pending': pending,
+    'Failed': failed,
+  };
+
+  // Status popup menu options
+  static final List<Map<String, dynamic>> statusUpdateOptions = [
+    {'value': completed, 'label': 'Mark as Completed'},
+    {'value': pending, 'label': 'Mark as Pending'},
+    {'value': failed, 'label': 'Mark as Failed'},
+  ];
+
+  /// Gets all valid status codes
+  static List<int> get validStatusCodes => [completed, pending, failed];
+
+  /// Checks if a status code is valid
+  static bool isValidStatus(int? code) {
+    return code != null && validStatusCodes.contains(code);
+  }
+
+  static String codeToName(int code) {
+    switch (code) {
+      case completed:
+        return 'Completed';
+      case pending:
+        return 'Pending';
+      case failed:
+        return 'Failed';
+      default:
+        return 'Unknown';
     }
   }
 
