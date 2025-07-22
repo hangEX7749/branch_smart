@@ -1,5 +1,6 @@
 import 'package:branch_comm/admin_screen/admin/view/add_admin.dart';
 import 'package:branch_comm/admin_screen/appointment/view/appointment_list.dart';
+import 'package:branch_comm/admin_screen/group/view/group_list.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/admin_shared_pref.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,13 @@ class AdminHome extends StatelessWidget {
         onTap: () {
           // Replace with your member management page
           // Navigator.push(context, MaterialPageRoute(builder: (_) => ManageMembers()));
+        },
+      ),
+      _AdminMenuItem(
+        title: "Manage Groups",
+        icon: Icons.business,
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupList()));
         },
       ),
       _AdminMenuItem(

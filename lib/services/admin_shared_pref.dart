@@ -15,15 +15,28 @@ class AdminSharedPreferenceHelper {
     required String adminId,
     required String adminName,
     required String adminEmail,
-    required String adminStatus,
+    required int adminStatus,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     return await Future.wait([
       prefs.setString(adminIdKey, adminId),
       prefs.setString(adminNameKey, adminName),
       prefs.setString(adminEmailKey, adminEmail),
-      prefs.setString(adminStatusKey, adminStatus),
+      //prefs.setString(adminStatusKey, adminStatus as String),
+      prefs.setInt(adminStatusKey, adminStatus),
+    
     ]).then((results) => results.every((success) => success));
+  }
+
+  Future<Map<String, String?>> getAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'id': prefs.getString(adminIdKey),
+      'name': prefs.getString(adminNameKey),
+      'email': prefs.getString(adminEmailKey),
+      'status': prefs.getInt(adminStatusKey)?.toString(), // If status is stored as int
+      //'status': prefs.getString(adminStatusKey),
+    };
   }
 
   Future<String?> getAdminId() async {

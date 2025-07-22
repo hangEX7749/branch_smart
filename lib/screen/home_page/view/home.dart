@@ -40,6 +40,48 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // void _changeGroupDialog() async {
+  //   //int? selected = activeGroupId;
+    
+  //   await showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: const Text("Select Active Group"),
+  //         content: DropdownButton<int>(
+  //           value: selected,
+  //           isExpanded: true,
+  //           items: userGroups.map((groupId) {
+  //             return DropdownMenuItem(
+  //               value: groupId,
+  //               child: Text(groupNames[groupId] ?? 'Group $groupId'),
+  //             );
+  //           }).toList(),
+  //           onChanged: (val) => setState(() => selected = val),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text("Cancel"),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () async {
+  //               Navigator.pop(context);
+  //               await SharedpreferenceHelper().setActiveGroup(selected!);
+  //               setState(() {
+  //                 activeGroupId = selected;
+  //               });
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 SnackBar(content: Text("Switched to group ${groupNames[selected]}")),
+  //               );
+  //             },
+  //             child: const Text("Save"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void initState() {
@@ -70,6 +112,25 @@ class _HomeState extends State<Home> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Change Group Section
+            Padding(
+                padding: const EdgeInsets.only(top: 8.0, bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      //"Group: ${groupNames[activeGroupId] ?? 'None'}",
+                      "Group",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    // ElevatedButton(
+                    //   onPressed: _changeGroupDialog,
+                    //   child: const Text("Change Group"),
+                    // ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
             // Balance Card
             Container(
               padding: const EdgeInsets.all(16),

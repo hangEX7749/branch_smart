@@ -31,6 +31,7 @@ class _AddAdminState extends State<AddAdmin> {
       final newUser = userCredential.user!;
       // 2. Add user data to Firestore with admin role
       await FirebaseFirestore.instance.collection('admins').doc(newUser.uid).set({
+        'uid': newUser.uid,
         'name': name.trim(),
         'email': email.trim(),
         'editor_type': 100,
