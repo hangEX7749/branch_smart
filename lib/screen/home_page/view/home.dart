@@ -1,3 +1,4 @@
+import 'package:branch_comm/screen/group/view/join_group.dart';
 import 'package:branch_comm/screen/home_page/utils/index.dart';
 //import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
 
@@ -185,6 +186,13 @@ class _HomeState extends State<Home> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => WallPage()),
+                    );
+                  }),
+                  //Join Group
+                  _buildServiceTile(Icons.group_add, "Join Group", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => JoinGroup()),
                     );
                   }),
                   _buildServiceTile(Icons.more_horiz, "More"),

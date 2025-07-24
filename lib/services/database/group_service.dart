@@ -33,6 +33,17 @@ class GroupService {
     await _groups.doc(groupId).delete();
   }
 
+  //Dropdown options for group name and id as value
+  Future<List<Map<String, dynamic>>> getGroupDropdownOptions() async {
+    final snapshot = await _groups.get();
+    return snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        'name': doc['group_name'],
+      };
+    }).toList();
+  }
+
   //Admin
   Stream<QuerySnapshot> getGroupsStream(String status, DateTime? startDate, DateTime? endDate) {
     Query query = _groups;

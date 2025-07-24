@@ -114,7 +114,7 @@ class _SignInState extends State<SignIn> {
               padding: const EdgeInsets.only(top: 10),
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                color: Color(0xffffefbf),
+                color: Color.fromARGB(255, 0, 0, 0),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(40),
                   bottomRight: Radius.circular(40),
@@ -123,23 +123,17 @@ class _SignInState extends State<SignIn> {
               child: Column(
                 children: [
                   Image.asset(
-                    "images/pan.png",
+                    "images/branch.png",
                     height: 180,
                     fit: BoxFit.fill,
                     width: 240,
-                  ),
-                  Image.asset(
-                    "images/logo.png",
-                    width: 150,
-                    height: 50,
-                    fit: BoxFit.cover,
                   ),
                 ],
               ),
             ),
             Container(
               margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height / 2.75,
+                  top: MediaQuery.of(context).size.height / 3.3,
                   left: 20,
                   right: 20
               ),
