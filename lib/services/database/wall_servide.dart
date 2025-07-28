@@ -4,7 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class WallService {
   final _wallPosts = FirebaseFirestore.instance.collection("wall_posts");
-  final _users = FirebaseFirestore.instance.collection("users");
+  //final _users = FirebaseFirestore.instance.collection("users");
 
   /// Uploads image to Firebase Storage and returns the download URL
   Future<String?> uploadImage(File imageFile) async {
@@ -14,7 +14,7 @@ class WallService {
       await ref.putFile(imageFile);
       return await ref.getDownloadURL();
     } catch (e) {
-      print("Image upload failed: $e");
+      //print("Image upload failed: $e");
       return null;
     }
   }
@@ -33,7 +33,7 @@ class WallService {
         "timestamp": FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print("Error adding wall post: $e");
+      //print("Error adding wall post: $e");
     }
   }
 
@@ -47,7 +47,7 @@ class WallService {
     try {
       await _wallPosts.doc(postId).delete();
     } catch (e) {
-      print("Error deleting wall post: $e");
+      //print("Error deleting wall post: $e");
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:branch_comm/admin_screen/admin/view/add_admin.dart';
+import 'package:branch_comm/admin_screen/amenity/view/amenity_list.dart';
 import 'package:branch_comm/admin_screen/appointment/view/appointment_list.dart';
 import 'package:branch_comm/admin_screen/group/view/group_list.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
@@ -42,6 +43,15 @@ class AdminHome extends StatelessWidget {
         onTap: () {
           // Replace with your booking page
           // Navigator.push(context, MaterialPageRoute(builder: (_) => ManageBookings()));
+        },
+      ),
+      //Amennity
+      _AdminMenuItem(
+        title: "Manage Amenities",
+        icon: Icons.room_service,
+        onTap: () {
+          // Replace with your amenity management page
+          Navigator.push(context, MaterialPageRoute(builder: (_) => AmenityList()));
         },
       ),
       _AdminMenuItem(
