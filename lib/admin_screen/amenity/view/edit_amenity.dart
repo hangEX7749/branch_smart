@@ -62,7 +62,7 @@ class _EditAmenityState extends State<EditAmenity> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Create Amenity")),
+      appBar: AppBar(title: const Text("Edit Amenity")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -107,7 +107,7 @@ class _EditAmenityState extends State<EditAmenity> {
 
     setState(() => isLoading = true);
 
-    await _amenityService.updateAmenity(widget.amenityId, {
+    final proceed = await _amenityService.updateAmenity(widget.amenityId, {
       'amenity_name': amenityName,
       'description': description,
       'max_capacity': maxCapacity,
@@ -116,6 +116,17 @@ class _EditAmenityState extends State<EditAmenity> {
 
     if (!mounted) return;
     setState(() => isLoading = false);
+
+    if (!proceed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to update amenity'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     //Navigator.pop(context); //will redirect to the previous screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

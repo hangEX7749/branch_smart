@@ -129,7 +129,6 @@ class _BookingState extends State<Booking> {
                     
                     // New booking data
                     Map<String, dynamic> bookingMap = {
-                      'id': bookingId,
                       'user_id': id,
                       'amenity': selectedAmenity,
                       'date': dateOnly,

@@ -7,17 +7,29 @@ class AmenityService {
     final docRef = _amenities.doc();
     return docRef.id; // Returns a new document ID
   }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> get() async {
+    return _amenities.get();
+  }
+
   Future<void> addAmenity(Map<String, dynamic> amenityData) async {
     try {
-      await _amenities.add(amenityData);
+      final docRef = await _amenities.add(amenityData);
+      await docRef.update({'id': docRef.id}); // Update with the new ID
     } catch (e) {
       // Handle error
       //print("Error adding amenity: $e");
     }
   }
 
-  Future<void> updateAmenity(String amenityId, Map<String, dynamic> data) async {
-    await _amenities.doc(amenityId).update(data);
+  Future<bool> updateAmenity(String amenityId, Map<String, dynamic> data) async {
+    try {
+      await _amenities.doc(amenityId).update(data);
+      return true; 
+    } catch (e) {
+      // Handle error
+      return false; // Return false if update fails
+    }
   }
 
   //Admin
@@ -51,8 +63,14 @@ class AmenityService {
     }
   }
 
-  Future<void> deleteAmenityById(String amenityId) async {
-    await _amenities.doc(amenityId).delete();
+  Future<bool> deleteAmenityById(String amenityId) async {
+    try {
+      await _amenities.doc(amenityId).delete();
+      return true;
+    } catch (e) {
+      // Handle error
+      //print("Error deleting amenity: $e");
+      return false;
+    } 
   }
-
 }

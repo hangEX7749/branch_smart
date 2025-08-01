@@ -11,13 +11,10 @@ class GroupService {
         .snapshots();
   }
 
-  Future<QuerySnapshot> getGroupById(String groupId) {
-    return _groups.where('id', isEqualTo: groupId).get();
-  }
-
   Future<bool> addGroup(Map<String, dynamic> groupData) async {
     try {
-      await _groups.add(groupData);
+      final docRef = await _groups.add(groupData);
+      await docRef.update({'id': docRef.id});
       return true;
     } catch (e) {
       //print("Error adding group: $e");
@@ -25,12 +22,24 @@ class GroupService {
     }
   }
 
-  Future<void> updateGroup(String groupId, Map<String, dynamic> data) async {
-    await _groups.doc(groupId).update(data);
+  Future<bool> updateGroup(String groupId, Map<String, dynamic> data) async {
+    try {
+      await _groups.doc(groupId).update(data);
+      return true;
+    } catch (e) {
+      //print("Error updating group: $e");
+      return false;
+    }
   }
 
-  Future<void> deleteGroup(String groupId) async {
-    await _groups.doc(groupId).delete();
+  Future<bool> deleteGroupById(String groupId) async {
+    try {
+      await _groups.doc(groupId).delete();
+      return true;
+    } catch (e) {
+      // Handle error
+      return false;
+    }
   }
 
   //Dropdown options for group name and id as value
@@ -45,6 +54,15 @@ class GroupService {
   }
 
   //Admin
+  Future<Map<String, dynamic>?> getGroupById(String groupId) async {
+    final doc = await _groups.doc(groupId).get();
+    //print(doc.data());
+    if (doc.exists) {
+      return doc.data() as Map<String, dynamic>;
+    }
+    return null; // Group not found
+  }
+
   Stream<QuerySnapshot> getGroupsStream(String status, DateTime? startDate, DateTime? endDate) {
     Query query = _groups;
 

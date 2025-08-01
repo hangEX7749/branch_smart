@@ -45,7 +45,6 @@ class _CreateGroupState extends State<CreateGroup> {
     try {
 
       final groupData = {
-        'id': FirebaseFirestore.instance.collection('groups').doc().id,
         'iid': adminId, // admin id who initiated
         'group_name': groupName.trim(),
         'status': Group.inactive,

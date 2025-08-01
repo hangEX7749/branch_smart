@@ -172,8 +172,14 @@ class _AmenityListState extends State<AmenityList> {
 
   //delete amenity by id
   Future<void> _deleteAmenityById(String amenityId) async {
-    await _amenityService.deleteAmenityById(amenityId);
+    final proceed = await _amenityService.deleteAmenityById(amenityId);
     if (!mounted) return;
+    if (!proceed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete amenity')),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Amenity deleted successfully')),
     );

@@ -10,6 +10,7 @@ class Group{
   // Predefined status codes
   static const int active = 10;
   static const int inactive = 90;
+  static const int unknown = 99;
 
   Group({
     required this.id,
@@ -38,6 +39,17 @@ class Group{
         return inactive;
       default:
         return 0; // Default case if status is unknown
+    }
+  }
+
+  static String statusCodeToName(int status) {
+    switch (status) {
+      case active:
+        return 'Active';
+      case inactive:
+        return 'Inactive';
+      default:
+        return 'Unknown';
     }
   }
 
