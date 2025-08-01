@@ -42,4 +42,11 @@ class BookingService {
   Future<void> deleteBooking(String bookingId) async {
     await _bookings.doc(bookingId).delete();
   }
+
+  //Admin
+  Stream<QuerySnapshot> getAllBookings() {
+    return _bookings
+      .orderBy('created_at', descending: true) 
+      .snapshots();
+  }
 }
