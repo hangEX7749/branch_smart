@@ -5,13 +5,13 @@ class MemberGroupService {
 
   Stream<QuerySnapshot> getUserMemberGroups(String userId) {
     return _memberGroups
-        .where('members', arrayContains: userId)
+        .where('user_id', arrayContains: userId)
         .orderBy('created_at', descending: true)
         .snapshots();
   }
 
-  Future<QuerySnapshot> getMemberGroupById(String groupId) {
-    return _memberGroups.where('id', isEqualTo: groupId).get();
+  Future<QuerySnapshot> getMemberGroupByUserId(String userId) {
+    return _memberGroups.where('user_id', isEqualTo: userId).get();
   }
 
   Future<bool> addMemberGroup(Map<String, dynamic> memberGroupData) async {

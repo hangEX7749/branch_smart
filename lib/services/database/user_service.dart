@@ -27,12 +27,8 @@ class UserService {
     }
   }
 
-  Future<QuerySnapshot> getUserWalletByEmail(String email) async {
-    return await _users.where("email", isEqualTo: email).get();
-  }
-
-  Future<QuerySnapshot> getUserById(String id) async {
-    return await _users.where("id", isEqualTo: id).get();
+  Future<QuerySnapshot> getUserById(String id) {
+    return _users.where("id", isEqualTo: id).get();
   }
 
   Future<void> updateUserWallet(String amount, String id) async {

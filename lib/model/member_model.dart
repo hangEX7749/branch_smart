@@ -2,6 +2,7 @@ class Member {
   String id;
   String name;
   String email;
+  String? groupId; 
   String? phoneNumber;
   String? status;
 
@@ -14,6 +15,7 @@ class Member {
     required this.id,
     required this.name,
     required this.email,
+    this.groupId,
     this.phoneNumber,
     this.status,
   });

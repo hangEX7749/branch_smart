@@ -11,6 +11,15 @@ class GroupService {
         .snapshots();
   }
 
+  //getGroupIdFromGroupName
+  Future<String?> getGroupIdFromGroupName(String groupName) async {
+    final snapshot = await _groups.where('group_name', isEqualTo: groupName).get();
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first.id; // Return the first matching group's ID
+    }
+    return null; // No group found with the given name
+  }
+
   Future<bool> addGroup(Map<String, dynamic> groupData) async {
     try {
       final docRef = await _groups.add(groupData);
@@ -40,6 +49,17 @@ class GroupService {
       // Handle error
       return false;
     }
+  }
+
+  //user group by group id
+  Future<DocumentSnapshot> getUserGroupById(String groupId) async {
+    return await _groups.doc(groupId).get();
+  }
+
+  Future<QuerySnapshot> getGroupsByIds(List<String> groupIds) async {
+    return await _groups
+        .where(FieldPath.documentId, whereIn: groupIds)
+        .get();
   }
 
   //Dropdown options for group name and id as value

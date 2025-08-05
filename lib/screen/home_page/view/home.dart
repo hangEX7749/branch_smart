@@ -1,5 +1,5 @@
-import 'package:branch_comm/screen/group/view/join_group.dart';
 import 'package:branch_comm/screen/home_page/utils/index.dart';
+
 //import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
 
 class Home extends StatefulWidget {
@@ -11,8 +11,24 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  final UserService _userService = UserService();
+  final GroupService _groupService = GroupService();
+  final AmenityGroupService _amenityGroupService = AmenityGroupService();
+  final MemberGroupService _memberGroupService = MemberGroupService();
+
   String? name, id, email;
   late Future<QuerySnapshot<Object?>> userData;
+  
+  // List of user groups and their names
+  List<Map<String, dynamic>> userMemberGroups = [];
+  String? selectedMemberGroupId;
+  bool isLoadingMemberGroups = true;
+
+  // List of groups for dropdown (for demonstration purposes)
+  List<String> groupList = [];
+  String? selectedGroup;
+
+  bool hasAmenities = false;
 
   Future<void> getTheSharedPref() async {
     final startTime = DateTime.now();
@@ -28,6 +44,9 @@ class _HomeState extends State<Home> {
 
     //print("User: ${user.id}, ${user.name}, ${user.email}");
 
+    final userData = await _userService.getUserById(user.id);
+
+
     if (!mounted) return;
 
     if (user.id.isEmpty || user.name.isEmpty) {
@@ -37,60 +56,78 @@ class _HomeState extends State<Home> {
         id = user.id;
         name = user.name;
         email = user.email;
+        _fetchMemberGroup(id!);
       });
     }
   }
 
-  // void _changeGroupDialog() async {
-  //   //int? selected = activeGroupId;
-    
-  //   await showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return AlertDialog(
-  //         title: const Text("Select Active Group"),
-  //         content: DropdownButton<int>(
-  //           value: selected,
-  //           isExpanded: true,
-  //           items: userGroups.map((groupId) {
-  //             return DropdownMenuItem(
-  //               value: groupId,
-  //               child: Text(groupNames[groupId] ?? 'Group $groupId'),
-  //             );
-  //           }).toList(),
-  //           onChanged: (val) => setState(() => selected = val),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(context),
-  //             child: const Text("Cancel"),
-  //           ),
-  //           ElevatedButton(
-  //             onPressed: () async {
-  //               Navigator.pop(context);
-  //               await SharedpreferenceHelper().setActiveGroup(selected!);
-  //               setState(() {
-  //                 activeGroupId = selected;
-  //               });
-  //               ScaffoldMessenger.of(context).showSnackBar(
-  //                 SnackBar(content: Text("Switched to group ${groupNames[selected]}")),
-  //               );
-  //             },
-  //             child: const Text("Save"),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  Future<void> _fetchMemberGroup(String userId) async {
+    try {
+      final QuerySnapshot memberGroupSnapshot =
+          await _memberGroupService.getMemberGroupByUserId(userId);
+
+      final List<String> groupNames = [];
+
+      for (var doc in memberGroupSnapshot.docs) {
+        final String groupId = doc['group_id'];
+
+        // Fetch group document by ID
+        final DocumentSnapshot groupDoc = await _groupService.getUserGroupById(groupId);
+
+        if (groupDoc.exists && groupDoc['group_name'] != null) {
+          groupNames.add(groupDoc['group_name']);
+        }
+      }
+
+      setState(() {
+        groupList = groupNames;
+        if (groupList.isNotEmpty && selectedGroup == null) {
+          selectedGroup = groupList.first;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      //print('Error fetching member groups: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load member groups: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _checkAmenities(String groupId) async {
+    try {
+      final amenitiesSnapshot = await _amenityGroupService.getAmenityGroupsByGroupId(groupId);
+
+      setState(() {
+        // Check if there are any amenities for the selected group
+        if (amenitiesSnapshot.docs.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No amenities available for this group.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          hasAmenities = false;
+        } else {
+          hasAmenities = true;  
+        }
+      });
+
+    } catch (e) {
+      //print('Error checking amenities: $e');
+      setState(() {
+        hasAmenities = false;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // Fetch user data from Firestore
-    //UserAuthData().getUserData(email);
 
-    //print(userData);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getTheSharedPref();
     });
@@ -113,25 +150,44 @@ class _HomeState extends State<Home> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Change Group Section
-            Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      //"Group: ${groupNames[activeGroupId] ?? 'None'}",
-                      "Group",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    // ElevatedButton(
-                    //   onPressed: _changeGroupDialog,
-                    //   child: const Text("Change Group"),
-                    // ),
-                  ],
+            // Group Selection Dropdown
+            if (groupList.isNotEmpty)
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Select Group',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
-              ),
-            const SizedBox(height: 16),
+                value: selectedGroup,
+                items: groupList.map((String group) {
+                  return DropdownMenuItem<String>(
+                    value: group,
+                    child: Text(group),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) async{
+                  setState(() {
+                    selectedGroup = newValue;
+                  });
+
+                  final groupId = await _groupService.getGroupIdFromGroupName(newValue!); 
+                  if (groupId == null) {
+                    // ignore: use_build_context_synchronously
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   SnackBar(content: Text('Group not found: $newValue')),
+                    // );
+                    return;
+                  }
+
+                  await _checkAmenities(groupId);
+                },
+              )
+            else
+              const Center(child: CircularProgressIndicator()),
+
+            const SizedBox(height: 24),
             // Balance Card
             Container(
               padding: const EdgeInsets.all(16),
@@ -164,12 +220,13 @@ class _HomeState extends State<Home> {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildServiceTile(Icons.calendar_today, "Book Facility", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Booking()),
-                    );
-                  }),
+                  if (hasAmenities)
+                    _buildServiceTile(Icons.calendar_today, "Book Facility", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const Booking()),
+                      );
+                    }),
                   _buildServiceTile(Icons.book_online, "Appointment", () {
                     Navigator.push(
                       context,
