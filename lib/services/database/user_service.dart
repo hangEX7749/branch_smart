@@ -52,4 +52,13 @@ class UserService {
   Future<void> deleteUser(String id) async {
     await _users.doc(id).delete();
   }
+
+  //get user name by id
+  Future<String?> getUserNameById(String userId) async {
+    final doc = await _users.doc(userId).get();
+    if (doc.exists) {
+      return doc['name'] as String?;
+    }
+    return null; // User not found
+  }
 }

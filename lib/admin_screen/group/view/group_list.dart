@@ -142,7 +142,7 @@ Widget _buildGroupList() {
               trailing: PopupMenuButton<String>(
                 onSelected: (value) async {
                   if (value == 'Edit') {
-                    print(group.toJson());
+                    //print(group.toJson());
                     Navigator.push(
                       context,
                       MaterialPageRoute(

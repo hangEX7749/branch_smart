@@ -100,4 +100,13 @@ class GroupService {
 
     return query.orderBy('created_at', descending: true).snapshots();
   }
+
+  //get group name
+  Future<String?> getGroupNameById(String groupId) async {
+    final doc = await _groups.doc(groupId).get();
+    if (doc.exists) {
+      return doc['group_name'] as String?;
+    }
+    return null; // Group not found
+  }
 }

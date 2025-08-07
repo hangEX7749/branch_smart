@@ -31,6 +31,9 @@ class _EditGroupState extends State<EditGroup> {
   List<Map<String, dynamic>> _amenities = []; // All available amenities
   List<String> _selectedAmenityIds = []; // Selected amenity IDs
 
+  List<String> statusOptions = [];
+  String? _selectedStatus;
+
   @override
   void initState() {
     super.initState();
@@ -89,55 +92,85 @@ Future<void> _loadGroupData() async {
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Group Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter group name';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: _descController,
-                      decoration:
-                          const InputDecoration(labelText: 'Description'),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Amenities", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: -8,
-                            children: _selectedAmenityIds.map((id) {
-                              final name = _amenities.firstWhere((a) => a['id'] == id, orElse: () => {'name': 'Unknown'})['name'];
-                              return Chip(label: Text(name));
-                            }).toList(),
-                          ),
-                          TextButton(
-                            onPressed: _openAmenitySelector,
-                            child: const Text('Select Amenities'),
-                          ),
-                        ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(labelText: 'Group Name'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter group name';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _editGroup,
-                      child: isLoading ? 
-                          const CircularProgressIndicator(color: Colors.white) : 
-                          const Text('Save'),
-                    ),
-                  ],
+                      TextFormField(
+                        controller: _descController,
+                        decoration:
+                            const InputDecoration(labelText: 'Description'),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Amenities", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: -8,
+                              children: _selectedAmenityIds.map((id) {
+                                final name = _amenities.firstWhere((a) => a['id'] == id, orElse: () => {'name': 'Unknown'})['name'];
+                                return Chip(label: Text(name));
+                              }).toList(),
+                            ),
+                            TextButton(
+                              onPressed: _openAmenitySelector,
+                              child: const Text('Select Amenities'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                  
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Status',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        value: _selectedStatus,
+                        items: Group.getStatusDropdownOptions().map((option) {
+                          return DropdownMenuItem<String>(
+                            value: option['value'].toString(),
+                            child: Text(option['label']),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedStatus = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a status';
+                          }
+                          return null;
+                        },
+                      ),
+                  
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: isLoading ? null : _editGroup,
+                        child: isLoading ? 
+                            const CircularProgressIndicator(color: Colors.white) : 
+                            const Text('Save'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -151,7 +184,7 @@ Future<void> _loadGroupData() async {
       final proceed = await _groupService.updateGroup(widget.groupId, {
         'group_name': _nameController.text,
         'description': _descController.text,
-        'status': status,
+        'status': _selectedStatus != null ? int.parse(_selectedStatus!) : Group.unknown,
         'updated_at': FieldValue.serverTimestamp(),
       });
 

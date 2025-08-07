@@ -1,3 +1,4 @@
+import 'package:branch_comm/model/member_group_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MemberGroupService {
@@ -11,7 +12,10 @@ class MemberGroupService {
   }
 
   Future<QuerySnapshot> getMemberGroupByUserId(String userId) {
-    return _memberGroups.where('user_id', isEqualTo: userId).get();
+    return _memberGroups
+      .where('user_id', isEqualTo: userId)
+      .where('status', isEqualTo: MemberGroup.active)
+      .get();
   }
 
   Future<bool> addMemberGroup(Map<String, dynamic> memberGroupData) async {
@@ -44,8 +48,20 @@ class MemberGroupService {
     await _memberGroups.doc(groupId).update(data);
   }
 
+  //updateMemberGroupStatus
+  Future<void> updateMemberGroupStatus(String groupId, int status) async {
+    await _memberGroups.doc(groupId).update({'status': status});
+  }
+
   Future<void> deleteMemberGroup(String groupId) async {
     await _memberGroups.doc(groupId).delete();
+  }
+
+  //admin
+  Stream<QuerySnapshot> getAllMemberGroups() {
+    return _memberGroups
+        .orderBy('created_at', descending: true)
+        .snapshots();
   }
 
 }

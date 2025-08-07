@@ -58,6 +58,7 @@ class Group{
     'All': -1,
     'Active': active,
     'Inactive': inactive,
+    'Unknown': unknown,
   };
 
   // Status popup menu options
@@ -65,6 +66,14 @@ class Group{
     'Active',
     'Inactive',
   ];
+
+  //dropdown options for status
+  static List<Map<String, dynamic>> getStatusDropdownOptions() {
+    return [
+      {'label': 'Active', 'value': active},
+      {'label': 'Inactive', 'value': inactive},
+    ];
+  }
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(

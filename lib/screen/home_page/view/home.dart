@@ -11,7 +11,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  final UserService _userService = UserService();
+  //final UserService _userService = UserService();
   final GroupService _groupService = GroupService();
   final AmenityGroupService _amenityGroupService = AmenityGroupService();
   final MemberGroupService _memberGroupService = MemberGroupService();
@@ -22,12 +22,13 @@ class _HomeState extends State<Home> {
   // List of user groups and their names
   List<Map<String, dynamic>> userMemberGroups = [];
   String? selectedMemberGroupId;
-  bool isLoadingMemberGroups = true;
-
+  //bool isLoadingMemberGroups = true;
+  
   // List of groups for dropdown (for demonstration purposes)
   List<String> groupList = [];
   String? selectedGroup;
 
+  bool hasGroups = false;
   bool hasAmenities = false;
 
   Future<void> getTheSharedPref() async {
@@ -35,49 +36,50 @@ class _HomeState extends State<Home> {
 
     Member user = Member(id: '', name: '', email: '');
 
-    // Keep checking every 100ms until data is available or timeout (e.g. 5 seconds)
     while ((user.id.isEmpty || user.name.isEmpty) &&
-          DateTime.now().difference(startTime).inSeconds < 5) {
+        DateTime.now().difference(startTime).inSeconds < 5) {
       await Future.delayed(Duration(milliseconds: 100));
       user = await SharedpreferenceHelper().getUser();
     }
 
-    //print("User: ${user.id}, ${user.name}, ${user.email}");
-
-    final userData = await _userService.getUserById(user.id);
-
-
-    if (!mounted) return;
+    if (!mounted) return; // ✅ Prevent setState after dispose
 
     if (user.id.isEmpty || user.name.isEmpty) {
       Navigator.pushReplacementNamed(context, '/signin');
     } else {
+      if (!mounted) return; // ✅ Double-check before setState
       setState(() {
         id = user.id;
         name = user.name;
         email = user.email;
-        _fetchMemberGroup(id!);
       });
+
+      // ✅ Call fetchMemberGroup AFTER state is updated
+      await _fetchMemberGroup(user.id);
     }
   }
 
   Future<void> _fetchMemberGroup(String userId) async {
     try {
-      final QuerySnapshot memberGroupSnapshot =
-          await _memberGroupService.getMemberGroupByUserId(userId);
+      final QuerySnapshot memberGroupSnapshot = await _memberGroupService.getMemberGroupByUserId(userId);
 
       final List<String> groupNames = [];
 
       for (var doc in memberGroupSnapshot.docs) {
         final String groupId = doc['group_id'];
 
-        // Fetch group document by ID
-        final DocumentSnapshot groupDoc = await _groupService.getUserGroupById(groupId);
+        final DocumentSnapshot groupDoc =
+            await _groupService.getUserGroupById(groupId);
 
         if (groupDoc.exists && groupDoc['group_name'] != null) {
           groupNames.add(groupDoc['group_name']);
         }
       }
+
+      //to check have groups or not
+      hasGroups = groupNames.isNotEmpty;
+
+      if (!mounted) return; // ✅ Check before setState
 
       setState(() {
         groupList = groupNames;
@@ -85,9 +87,16 @@ class _HomeState extends State<Home> {
           selectedGroup = groupList.first;
         }
       });
+
+      // Check amenities for the first group if available
+      if (groupNames.isNotEmpty) {
+        final firstGroupId = memberGroupSnapshot.docs.first['group_id'];
+        await _checkAmenities(firstGroupId);
+      }
+
     } catch (e) {
-      if (!mounted) return;
-      //print('Error fetching member groups: $e');
+      if (!mounted) return; // ✅ Prevent error UI after disposal
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load member groups: ${e.toString()}'),
@@ -138,11 +147,11 @@ class _HomeState extends State<Home> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
         elevation: 1,
-        title: Text('Welcome, ${name ?? ""}', style: const TextStyle(color: Colors.black)),
+        title: Text('Welcome, ${name ?? ""}', style: const TextStyle(color: Colors.white)),
         actions: const [
-          Icon(Icons.notifications_none, color: Colors.black),
+          Icon(Icons.notifications_none, color: Colors.white),
           SizedBox(width: 16),
         ],
       ),
@@ -167,50 +176,40 @@ class _HomeState extends State<Home> {
                     child: Text(group),
                   );
                 }).toList(),
-                onChanged: (String? newValue) async{
+                onChanged: (String? newValue) async {
                   setState(() {
                     selectedGroup = newValue;
                   });
 
-                  final groupId = await _groupService.getGroupIdFromGroupName(newValue!); 
-                  if (groupId == null) {
-                    // ignore: use_build_context_synchronously
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   SnackBar(content: Text('Group not found: $newValue')),
-                    // );
-                    return;
-                  }
-
+                  final groupId = await _groupService.getGroupIdFromGroupName(newValue!);
+                  if (groupId == null) return;
                   await _checkAmenities(groupId);
                 },
-              )
-            else
-              const Center(child: CircularProgressIndicator()),
-
-            const SizedBox(height: 24),
+              ),
+            //const SizedBox(height: 24),
             // Balance Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.indigo,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Wallet Balance', style: TextStyle(color: Colors.white70)),
-                      SizedBox(height: 8),
-                      Text('\$1,240.00',
-                          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  Icon(Icons.account_balance_wallet, color: Colors.white, size: 32),
-                ],
-              ),
-            ),
+            // Container(
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: Colors.indigo,
+            //     borderRadius: BorderRadius.circular(16),
+            //   ),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: const [
+            //       Column(
+            //         crossAxisAlignment: CrossAxisAlignment.start,
+            //         children: [
+            //           Text('Wallet Balance', style: TextStyle(color: Colors.white70)),
+            //           SizedBox(height: 8),
+            //           Text('\$1,240.00',
+            //               style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+            //         ],
+            //       ),
+            //       Icon(Icons.account_balance_wallet, color: Colors.white, size: 32),
+            //     ],
+            //   ),
+            // ),
             const SizedBox(height: 24),
 
             // Services Grid
@@ -220,39 +219,40 @@ class _HomeState extends State<Home> {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  if (hasAmenities)
-                    _buildServiceTile(Icons.calendar_today, "Book Facility", () {
+                  if (hasGroups) ...[
+                    if (hasAmenities)
+                      _buildServiceTile(Icons.calendar_today, "Book Facility", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Booking()),
+                        );
+                      }),
+                    _buildServiceTile(Icons.book_online, "Appointment", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const Booking()),
+                        MaterialPageRoute(builder: (_) => const Appointment()),
                       );
                     }),
-                  _buildServiceTile(Icons.book_online, "Appointment", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Appointment()),
-                    );
-                  }),
-                  _buildServiceTile(Icons.people_alt, "Members", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => MemberListPage()),
-                    );
-                  }),                  
-                  _buildServiceTile(Icons.chat_bubble_outline, "Community Wall", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => WallPage()),
-                    );
-                  }),
-                  //Join Group
+                    _buildServiceTile(Icons.people_alt, "Members", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => MemberListPage()),
+                      );
+                    }),                  
+                    _buildServiceTile(Icons.chat_bubble_outline, "Community Wall", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => WallPage()),
+                      );
+                    }),
+                  ],
+                  // Join Group - no condition
                   _buildServiceTile(Icons.group_add, "Join Group", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => JoinGroup()),
                     );
                   }),
-                  _buildServiceTile(Icons.more_horiz, "More"),
                 ],
               ),
             ),

@@ -1,5 +1,5 @@
+import 'package:branch_comm/screen/account_page/utils/index.dart';
 import 'package:branch_comm/model/member_group_model.dart';
-import 'package:branch_comm/screen/home_page/utils/index.dart';
 import 'package:branch_comm/services/database/group_service.dart';
 import 'package:branch_comm/services/database/member_group_service.dart';
 
