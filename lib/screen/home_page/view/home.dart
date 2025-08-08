@@ -16,12 +16,12 @@ class _HomeState extends State<Home> {
   final AmenityGroupService _amenityGroupService = AmenityGroupService();
   final MemberGroupService _memberGroupService = MemberGroupService();
 
-  String? name, id, email;
+  String? name, id, email, userGroupId;
   late Future<QuerySnapshot<Object?>> userData;
   
   // List of user groups and their names
   List<Map<String, dynamic>> userMemberGroups = [];
-  String? selectedMemberGroupId;
+  //String? selectedMemberGroupId;
   //bool isLoadingMemberGroups = true;
   
   // List of groups for dropdown (for demonstration purposes)
@@ -120,8 +120,10 @@ class _HomeState extends State<Home> {
             ),
           );
           hasAmenities = false;
+          userGroupId = null;
         } else {
           hasAmenities = true;  
+          userGroupId = groupId; 
         }
       });
 
@@ -129,6 +131,7 @@ class _HomeState extends State<Home> {
       //print('Error checking amenities: $e');
       setState(() {
         hasAmenities = false;
+        userGroupId = null;
       });
     }
   }
@@ -224,7 +227,7 @@ class _HomeState extends State<Home> {
                       _buildServiceTile(Icons.calendar_today, "Book Facility", () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const Booking()),
+                          MaterialPageRoute(builder: (_) => Booking(groupId: userGroupId!)),
                         );
                       }),
                     _buildServiceTile(Icons.book_online, "Appointment", () {

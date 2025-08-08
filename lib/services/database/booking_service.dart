@@ -4,6 +4,11 @@ class BookingService {
   final _bookings = FirebaseFirestore.instance.collection("bookings");
   //final _users = FirebaseFirestore.instance.collection("users");
 
+  Future<String> getNewId() async {
+    final docRef = _bookings.doc();
+    return docRef.id;
+  }
+
   Stream<QuerySnapshot> getUserBookings(String userId) {
     return _bookings
         .where('status', whereIn: [10, 50, 90])

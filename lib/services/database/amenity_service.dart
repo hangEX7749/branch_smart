@@ -8,6 +8,16 @@ class AmenityService {
     return docRef.id; // Returns a new document ID
   }
 
+  //Get amenities name by amenity ID
+  Future<String?> getAmenityNameById(String amenityId) async {
+    final doc = await _amenities.doc(amenityId).get();
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
+      return data['amenity_name'] as String?; // Adjust field name as necessary
+    }
+    return null; // Amenity not found
+  }
+
   Future<QuerySnapshot<Map<String, dynamic>>> get() async {
     return _amenities.get();
   }

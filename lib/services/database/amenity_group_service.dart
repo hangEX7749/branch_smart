@@ -57,4 +57,11 @@ class AmenityGroupService {
     }
   }
 
+  //get all amenity group by amenityId and groupId
+  Future<QuerySnapshot<Map<String, dynamic>>> getAmenityGroupByGroupId(String groupId) {
+    return _amenityGroups
+        .where('group_id', isEqualTo: groupId)
+        .get();
+  }
+
 }

@@ -1,12 +1,14 @@
 import 'package:branch_comm/screen/booking_page/view/view_booking.dart';
+import 'package:branch_comm/services/database/amenity_group_service.dart';
+import 'package:branch_comm/services/database/amenity_service.dart';
 import 'package:branch_comm/services/database/booking_service.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:random_string/random_string.dart';
 
 class Booking extends StatefulWidget {
-  const Booking({super.key});
+  final String groupId;
+  const Booking({super.key, required this.groupId});
 
   @override
   State<Booking> createState() => _BookingState();
@@ -18,8 +20,10 @@ class _BookingState extends State<Booking> {
   DateTime? selectedDate;
   String? selectedTime;
 
-  final BookingService bookingService = BookingService();
-  final List<String> amenities = ['Badminton Court', 'BBQ Area'];
+  final BookingService _bookingService = BookingService();
+  final AmenityService _amenityService = AmenityService();
+  
+  //final List<String> amenities = ['Badminton Court', 'BBQ Area'];
   final List<String> timeSlots = ['9:00 AM', '11:00 AM', '2:00 PM', '5:00 PM'];
 
   Future<void> getTheSharedPref() async {
@@ -47,19 +51,62 @@ class _BookingState extends State<Booking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Book Facility')),
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 1,
+        title: Text(
+          'Book Facility',
+          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Change the back arrow color
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Select Amenity'),
-              value: selectedAmenity,
-              items: amenities
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() => selectedAmenity = value);
+            FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              future: AmenityGroupService().getAmenityGroupByGroupId(widget.groupId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Text('Failed to load amenities');
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text('No amenities available');
+                }
+
+                return FutureBuilder<List<String>>(
+                  future: Future.wait(
+                    snapshot.data!.docs.map((doc) async {
+                      final data = doc.data();
+                      final amenityId = data['amenity_id'] as String;
+                      return await _amenityService.getAmenityNameById(amenityId) ?? amenityId;
+                    }),
+                  ),
+                  builder: (context, nameSnapshot) {
+                    if (!nameSnapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final amenities = nameSnapshot.data!;
+
+                    return DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(labelText: 'Select Amenity'),
+                      value: selectedAmenity,
+                      items: amenities
+                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => selectedAmenity = value);
+                      },
+                    );
+                  },
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -108,7 +155,7 @@ class _BookingState extends State<Booking> {
                   ).toIso8601String().split('T')[0]; // e.g., 2025-06-18
 
                   try {
-                    final query = await bookingService.checkBooking(
+                    final query = await _bookingService.checkBooking(
                       selectedAmenity!,
                       dateOnly,
                       selectedTime!,
@@ -124,11 +171,10 @@ class _BookingState extends State<Booking> {
                       ));
                       return;
                     }
-
-                    String bookingId = randomMerge('book_', randomAlphaNumeric(10));
                     
                     // New booking data
                     Map<String, dynamic> bookingMap = {
+                      'id': await _bookingService.getNewId(),
                       'user_id': id,
                       'amenity': selectedAmenity,
                       'date': dateOnly,
@@ -138,7 +184,7 @@ class _BookingState extends State<Booking> {
                       'updated_at': FieldValue.serverTimestamp(),
                     };
 
-                    final proceed = await bookingService.addBooking(bookingMap, bookingId);
+                    final proceed = await _bookingService.addBooking(bookingMap, bookingMap['id']);
                     
                     if (!context.mounted) return;
 
