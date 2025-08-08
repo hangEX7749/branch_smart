@@ -4,7 +4,7 @@ import 'package:branch_comm/admin_screen/appointment/view/appointment_list.dart'
 import 'package:branch_comm/admin_screen/group/view/group_list.dart';
 import 'package:branch_comm/admin_screen/member/view/member_list.dart';
 import 'package:branch_comm/admin_screen/member_group/view/member_group_list.dart';
-import 'package:branch_comm/booking/view/booking_list.dart';
+import 'package:branch_comm/admin_screen/booking/view/booking_list.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:branch_comm/services/admin_shared_pref.dart';
 import 'package:flutter/material.dart';
