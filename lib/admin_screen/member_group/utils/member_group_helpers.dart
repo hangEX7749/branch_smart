@@ -9,7 +9,7 @@ class MemberGroupHelpers {
         return Colors.green;
       case MemberGroup.pending:
         return Colors.orange;
-      case MemberGroup.rejected:
+      case MemberGroup.inactive:
         return Colors.red;
       default:
         return Colors.grey;
@@ -22,8 +22,8 @@ class MemberGroupHelpers {
         return 'Active';
       case MemberGroup.pending:
         return 'Pending';
-      case MemberGroup.rejected:
-        return 'Rejected';
+      case MemberGroup.inactive:
+        return 'Inactive';
       default:
         return 'Unknown';
     }
@@ -35,7 +35,7 @@ class MemberGroupHelpers {
         return Icons.check_circle;
       case MemberGroup.pending:
         return Icons.hourglass_empty;
-      case MemberGroup.rejected:
+      case MemberGroup.inactive:
         return Icons.cancel;
       default:
         return Icons.help_outline;
