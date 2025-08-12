@@ -5,9 +5,10 @@ class Appointment {
   String? contactNum;
   String? userId;
   String? venue;
+  String? groupId; // Optional, used for group appointments
   int? numGuests = 1; // Default to 1 person
   int? appointmentType; // 'invite'
-  int? status; // 10 = Completed, 30 = Pending, 50 = Failed
+  int? status; // 10 = Completed, 30 = Pending, 50 = rejected
   DateTime? inviteDateTime;
   DateTime? expiredDateTime;
   DateTime? createdAt;
@@ -19,10 +20,13 @@ class Appointment {
   // Predefined status codes
   static const int completed = 10;
   static const int pending = 30;
-  static const int failed = 50;
+  static const int rejected = 90;
+  static const int error = 99;
+  
 
   Appointment({
     required this.id,
+    required this.groupId,
     this.guestName,
     this.contactNum,
     required this.userId,
@@ -42,8 +46,8 @@ class Appointment {
         return 'Completed';
       case pending:
         return 'Pending';
-      case failed:
-        return 'Failed';
+      case rejected:
+        return 'Rejected';
       default:
         return 'Error';
     }
@@ -54,18 +58,18 @@ class Appointment {
     allStatusLabel: null,
     'Completed': completed,
     'Pending': pending,
-    'Failed': failed,
+    'Rejected': rejected,
   };
 
   // Status popup menu options
   static final List<Map<String, dynamic>> statusUpdateOptions = [
     {'value': completed, 'label': 'Mark as Completed'},
     {'value': pending, 'label': 'Mark as Pending'},
-    {'value': failed, 'label': 'Mark as Failed'},
+    {'value': rejected, 'label': 'Mark as Rejected'},
   ];
 
   /// Gets all valid status codes
-  static List<int> get validStatusCodes => [completed, pending, failed];
+  static List<int> get validStatusCodes => [completed, pending, rejected];
 
   /// Checks if a status code is valid
   static bool isValidStatus(int? code) {
@@ -78,8 +82,8 @@ class Appointment {
         return 'Completed';
       case pending:
         return 'Pending';
-      case failed:
-        return 'Failed';
+      case rejected:
+        return 'Rejected';
       default:
         return 'Unknown';
     }

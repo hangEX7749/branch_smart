@@ -3,6 +3,7 @@ import 'package:branch_comm/services/database/amenity_group_service.dart';
 import 'package:branch_comm/services/database/amenity_service.dart';
 import 'package:branch_comm/services/database/booking_service.dart';
 import 'package:branch_comm/services/shared_pref.dart';
+import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -52,17 +53,7 @@ class _BookingState extends State<Booking> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 1,
-        title: Text(
-          'Book Facility',
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.white, // Change the back arrow color
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'Book Facility'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

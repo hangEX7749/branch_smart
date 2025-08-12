@@ -1,3 +1,4 @@
+import 'package:branch_comm/admin_screen/appointment/utils/appointment_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:branch_comm/model/appointment_model.dart';
 import 'package:branch_comm/services/database/appointment_service.dart';
@@ -78,6 +79,7 @@ class _AppointmentListState extends State<AppointmentList> {
                   final data = doc.data() as Map<String, dynamic>;
                   return Appointment(
                     id: doc.id,
+                    groupId: data['group_id'],
                     userId: data['userId'] ?? '',
                     guestName: data['guest_name'],
                     contactNum: data['contact_number'],
@@ -116,14 +118,32 @@ class _AppointmentListState extends State<AppointmentList> {
                   itemCount: filteredAppointments.length,
                   itemBuilder: (_, index) {
                     final appointment = filteredAppointments[index];
+
+                    // Get values from helper
+                    final statusColor = AppointmentHelpers.getStatusColor(appointment.status);
+                    final statusText = AppointmentHelpers.getStatusText(appointment.status);
+                    final statusIcon = AppointmentHelpers.getStatusIcon(appointment.status);
+
                     return ListTile(
-                      leading: const Icon(Icons.calendar_today),
-                      title: Text("${appointment.guestName ?? 'No name'} @ ${appointment.venue}"),
+                      leading: Icon(Icons.calendar_today, color: Colors.blue),
+                      title: Text(
+                        "${appointment.guestName ?? 'No name'} @ ${appointment.venue}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("Date: ${DateFormat('yyyy-MM-dd HH:mm').format(appointment.inviteDateTime!)}"),
-                          Text("Status: ${appointment.getStatusName()}"),
+                          Row(
+                            children: [
+                              Icon(statusIcon, size: 16, color: statusColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                statusText,
+                                style: TextStyle(color: statusColor, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                           if (appointment.numGuests != null) 
                             Text("Guests: ${appointment.numGuests}"),
                         ],
@@ -131,14 +151,52 @@ class _AppointmentListState extends State<AppointmentList> {
                       isThreeLine: true,
                       trailing: PopupMenuButton<String>(
                         onSelected: (val) => _updateStatus(appointment.id, val),
-                        itemBuilder: (context) => 
-                          Appointment.statusUpdateOptions.map((option) {
-                            return PopupMenuItem<String>(
-                              value: option['value'].toString(),
-                              child: Text(option['label']),
-                            );
-                          }).toList(),
+                        itemBuilder: (BuildContext context) => [
+                          PopupMenuItem<String>(
+                            value: Appointment.pending.toString(),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  AppointmentHelpers.getStatusIcon(Appointment.pending),
+                                  color: AppointmentHelpers.getStatusColor(Appointment.pending),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(AppointmentHelpers.getStatusText(Appointment.pending)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: Appointment.completed.toString(),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  AppointmentHelpers.getStatusIcon(Appointment.completed),
+                                  color: AppointmentHelpers.getStatusColor(Appointment.completed),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(AppointmentHelpers.getStatusText(Appointment.completed)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: Appointment.rejected.toString(),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  AppointmentHelpers.getStatusIcon(Appointment.rejected),
+                                  color: AppointmentHelpers.getStatusColor(Appointment.rejected),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(AppointmentHelpers.getStatusText(Appointment.rejected)),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+
                     );
                   },
                 );
@@ -155,12 +213,25 @@ class _AppointmentListState extends State<AppointmentList> {
     final status = int.tryParse(newStatus);
     if (status == null) return;
 
-    await _appointmentService.updateAppointmentStatus(docId, status);
-        
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Status updated to ${Appointment.codeToName(status)}")),
-    );
+    try {
+      await _appointmentService.updateAppointmentStatus(docId, status);
+          
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Status updated to ${Appointment.codeToName(status)}"),
+          backgroundColor: AppointmentHelpers.getStatusColor(status)
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to update status"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _pickDateRange() async {

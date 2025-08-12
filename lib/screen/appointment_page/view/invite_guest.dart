@@ -1,11 +1,13 @@
 import 'package:branch_comm/services/shared_pref.dart';
+import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/services/database/appointment_service.dart';
 import 'package:intl/intl.dart';
 
 class InviteGuest extends StatefulWidget {
-  const InviteGuest({super.key});
+  final String groupId;
+  const InviteGuest({super.key, required this.groupId});
 
   @override
   State<InviteGuest> createState() => _InviteGuestState();
@@ -22,7 +24,7 @@ class _InviteGuestState extends State<InviteGuest> {
   final _venueController = TextEditingController();
 
   DateTime? selectedDateTime;
-  String? userId;
+  String? userId, groupId;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _InviteGuestState extends State<InviteGuest> {
     if (mounted) {
       setState(() {
         userId = user.id;
+        groupId = widget.groupId;
       });
     }
   }
@@ -48,40 +51,58 @@ class _InviteGuestState extends State<InviteGuest> {
     }
 
     try {
-      
-      //Todo: Check if appointment already exists
+      //Check if appointment already exists
+      if (await _appointmentService.appointmentExists(
+          userId: userId!,
+          groupId: groupId!,
+          inviteDateTime: selectedDateTime!)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An appointment already exists for this date.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
       final now = DateTime.now();
-      String appointmentId = FirebaseFirestore.instance.collection('appointments').doc().id;
-     
+
       final appointmentMap = {
-        'id': appointmentId,
+        'id': await _appointmentService.getNewId(),
+        'group_id': groupId,
         'guest_name': _guestNameController.text.trim(),
         'contact_num': _contactController.text.trim(),
         'user_id': userId,
         'venue': _venueController.text.trim(),
         'num_guests': int.tryParse(_guestNumController.text.trim()) ?? 0, 
         'appointment_type': 10, // 10 = Invite
-        'status': 50, // 50 = Pending
+        'status': 30, // 50 = Pending
         'invite_datetime': selectedDateTime,
         'expired_datetime': selectedDateTime!.add(const Duration(hours: 2)),
         'created_at': now,
         'updated_at': now,
       };
 
-      final proceed = await _appointmentService.addAppointment(appointmentMap, appointmentId);
+      final proceed = await _appointmentService.addAppointment(appointmentMap, appointmentMap['id'] as String);
 
       if (!mounted) return;
 
       if (!proceed) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send invitation. Try again.')),
+          const SnackBar(
+            content: Text('Failed to send invitation. Try again.'),
+            backgroundColor: Colors.red,
+          ),
         );
         return;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Guest invited successfully!')),
+        const SnackBar(
+          content: Text('Guest invited successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
 
       // Reset form
@@ -89,7 +110,10 @@ class _InviteGuestState extends State<InviteGuest> {
       setState(() => selectedDateTime = null);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to invite guest.')),
+        const SnackBar(
+          content: Text('Failed to invite guest.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -101,7 +125,7 @@ class _InviteGuestState extends State<InviteGuest> {
         : 'Select Date & Time';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Invite Guest')),
+      appBar: CustomAppBar(title: 'Invite Guest'),
       body: userId == null
           ? const Center(child: CircularProgressIndicator())
           : Padding(

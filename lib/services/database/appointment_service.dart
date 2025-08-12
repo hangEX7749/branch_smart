@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AppointmentService {
   final _appointments = FirebaseFirestore.instance.collection("appointments");
 
+  Future<String> getNewId() async {
+    return _appointments.doc().id;
+  }
+
   Stream<QuerySnapshot> getUserAppointments(String userId) {
     final now = Timestamp.now();
     return _appointments
@@ -29,6 +33,22 @@ class AppointmentService {
         //.where('appointment_type', isEqualTo: 'invite')
         .where('invite_datetime', isEqualTo: inviteDateTime)
         .get();
+  }
+
+  //check if appointment already exists
+  Future<bool> appointmentExists({required String userId, required String groupId, required DateTime inviteDateTime}) async {
+    try {
+      final snapshot = await _appointments
+        .where('user_id', isEqualTo: userId)
+        .where('group_id', isEqualTo: groupId)
+        .where('invite_datetime', isEqualTo: inviteDateTime)
+        .get();
+        return snapshot.docs.isNotEmpty;
+
+    } catch (e) {
+      //print("Error checking appointment: $e");
+      return false;
+    }
   }
 
   Future<bool> addAppointment(Map<String, dynamic> appointmentMap, String appointmentId) async {
