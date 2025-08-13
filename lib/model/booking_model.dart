@@ -1,5 +1,6 @@
 class BookingModel {
   String id;
+  String groupId; 
   String? amenity;
   String? time;
   String? date;
@@ -15,6 +16,7 @@ class BookingModel {
 
   BookingModel({
     required this.id,
+    required this.groupId,
     required this.amenity,
     required this.time,
     required this.date,

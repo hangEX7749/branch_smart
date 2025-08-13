@@ -9,12 +9,28 @@ class BookingService {
     return docRef.id;
   }
 
-  Stream<QuerySnapshot> getUserBookings(String userId) {
-    return _bookings
-        .where('status', whereIn: [10, 50, 90])
+  Stream<QuerySnapshot> getUserBookings(String? userId, String? groupId) {
+    try {
+      return _bookings
+        .where('status', whereIn: [10, 30, 90])
         .where('user_id', isEqualTo: userId)
+        .where('group_id', isEqualTo: groupId)
         .orderBy('date', descending: false) 
-        //.orderBy('date')
+        .snapshots();
+    } catch (e) {
+      //print("Error getting user bookings: $e");
+      return Stream.empty();
+    }
+  }
+
+  Stream<QuerySnapshot> getPastBookings(String? userId, String? groupId) {
+    final now = Timestamp.now();
+    return _bookings
+        .where('status', whereIn: [10,90])
+        .where('user_id', isEqualTo: userId)
+        .where('group_id', isEqualTo: groupId)
+        .where('date', isLessThan: now)
+        .orderBy('date', descending: true)
         .snapshots();
   }
 

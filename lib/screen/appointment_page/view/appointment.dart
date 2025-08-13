@@ -28,7 +28,7 @@ class _AppointmentState extends State<Appointment> {
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => InviteGuest(groupId: widget.groupId ?? '')),
+              MaterialPageRoute(builder: (_) => InviteGuest(groupId: widget.groupId)),
             ),
           ),
           const Divider(),

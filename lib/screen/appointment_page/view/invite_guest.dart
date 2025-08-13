@@ -1,6 +1,5 @@
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:branch_comm/widgets/custom_appbar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/services/database/appointment_service.dart';
 import 'package:intl/intl.dart';

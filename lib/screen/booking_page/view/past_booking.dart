@@ -4,15 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 
-class UpComingBookings extends StatefulWidget {
-  final String? groupId;
-  const UpComingBookings({super.key, this.groupId});
+class PastBookings extends StatefulWidget {
+  final String groupId;
+  const PastBookings({super.key, required this.groupId});
 
   @override
-  State<UpComingBookings> createState() => _UpComingBookingsState();
+  State<PastBookings> createState() => _PastBookingsState();
 }
 
-class _UpComingBookingsState extends State<UpComingBookings> {
+class _PastBookingsState extends State<PastBookings> {
   DateTime? filterDate;
   String? name, userId, email, groupId;
   final BookingService bookingService = BookingService();
@@ -47,7 +47,7 @@ class _UpComingBookingsState extends State<UpComingBookings> {
         : null;
 
     return Scaffold(
-      appBar: CustomAppBar (title:'Upcoming Bookings'),
+      appBar: CustomAppBar (title:'Past Bookings'),
       body: Column(
         children: [
           Padding(
@@ -88,7 +88,7 @@ class _UpComingBookingsState extends State<UpComingBookings> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: bookingService.getUserBookings(userId, groupId),
+              stream: bookingService.getPastBookings(userId, groupId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
