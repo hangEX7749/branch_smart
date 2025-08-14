@@ -34,9 +34,9 @@ class BookingService {
         .snapshots();
   }
 
-  Future <QuerySnapshot> checkBooking(String anemity, String date, String time) async {
+  Future <QuerySnapshot> checkBooking(String anemityId, String date, String time) async {
     return _bookings
-        .where('amenity', isEqualTo: anemity)
+        .where('amenity_id', isEqualTo: anemityId)
         .where('date', isEqualTo: date)
         .where('time', isEqualTo: time)
         .get();
@@ -58,6 +58,10 @@ class BookingService {
 
   Future<void> updateBooking(String bookingId, Map<String, dynamic> data) async {
     await _bookings.doc(bookingId).update(data);
+  }
+
+  Future<void> updateBookingStatus(String bookingId, int status) async {
+    await _bookings.doc(bookingId).update({'status': status});
   }
 
   Future<void> deleteBooking(String bookingId) async {

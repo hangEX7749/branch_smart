@@ -16,15 +16,23 @@ class MakeBooking extends StatefulWidget {
 }
 
 class _MakeBookingState extends State<MakeBooking> {
-  String? name, id, email, groupId;
+  String? name, id, email, amenityId, groupId;
+  int? numGuests = 1;
   String? selectedAmenity;
   DateTime? selectedDate;
   String? selectedTime;
+  int? maxGuests; // Store the max capacity for selected amenity
+
+  // Cache the amenities list to prevent unnecessary rebuilds
+  List<Map<String, dynamic>>? _cachedAmenities;
+  
+  // Controllers for form fields
+  final TextEditingController _guestController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
 
   final BookingService _bookingService = BookingService();
   final AmenityService _amenityService = AmenityService();
   
-  //final List<String> amenities = ['Badminton Court', 'BBQ Area'];
   final List<String> timeSlots = ['9:00 AM', '11:00 AM', '2:00 PM', '5:00 PM'];
 
   Future<void> getTheSharedPref() async {
@@ -44,10 +52,53 @@ class _MakeBookingState extends State<MakeBooking> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _loadAmenities() async {
+    if (_cachedAmenities != null) {
+      return _cachedAmenities!;
+    }
+
+    final snapshot = await AmenityGroupService().getAmenityGroupByGroupId(widget.groupId);
+    
+    if (snapshot.docs.isEmpty) {
+      _cachedAmenities = [];
+      return _cachedAmenities!;
+    }
+
+    final amenities = await Future.wait(
+      snapshot.docs.map((doc) async {
+        final data = doc.data();
+        final amenityId = data['amenity_id'] as String;
+        
+        // Get full amenity details including max_capacity
+        final amenityDoc = await _amenityService.getAmenityById(amenityId);
+        final amenityData = amenityDoc;
+        
+        final amenityName = amenityData?['amenity_name'] ?? amenityId;
+        final maxCapacity = amenityData?['max_capacity'] as int? ?? 1;
+        
+        return {
+          'id': amenityId,
+          'amenity_name': amenityName,
+          'max_capacity': maxCapacity,
+        };
+      }),
+    );
+    _cachedAmenities = amenities;
+    return _cachedAmenities!;
+  }
+
   @override
   void initState() {
     super.initState();
     getTheSharedPref();
+    _guestController.text = numGuests.toString();
+  }
+
+  @override
+  void dispose() {
+    _guestController.dispose();
+    _dateController.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,8 +110,9 @@ class _MakeBookingState extends State<MakeBooking> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              future: AmenityGroupService().getAmenityGroupByGroupId(widget.groupId),
+            // Amenity Selection
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _loadAmenities(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -68,48 +120,47 @@ class _MakeBookingState extends State<MakeBooking> {
                 if (snapshot.hasError) {
                   return const Text('Failed to load amenities');
                 }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Text('No amenities available');
                 }
 
-                return FutureBuilder<List<String>>(
-                  future: Future.wait(
-                    snapshot.data!.docs.map((doc) async {
-                      final data = doc.data();
-                      final amenityId = data['amenity_id'] as String;
-                      return await _amenityService.getAmenityNameById(amenityId) ?? amenityId;
-                    }),
-                  ),
-                  builder: (context, nameSnapshot) {
-                    if (!nameSnapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                final amenities = snapshot.data!;
 
-                    final amenities = nameSnapshot.data!;
-
-                    return DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Select Amenity'),
-                      value: selectedAmenity,
-                      items: amenities
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() => selectedAmenity = value);
-                      },
-                    );
+                return DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: 'Select Amenity'),
+                  value: selectedAmenity,
+                  items: amenities
+                      .map((e) => DropdownMenuItem<String>(
+                            value: e['id'] as String,
+                            child: Text('${e['amenity_name']} (Max: ${e['max_capacity']} guests)'),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedAmenity = value;
+                      // Set maxGuests for the selected amenity
+                      maxGuests = amenities.firstWhere(
+                        (amenity) => amenity['id'] == value,
+                        orElse: () => {'max_capacity': 1},
+                      )['max_capacity'] as int;
+                      
+                      // Reset guests if current selection exceeds max
+                      if (numGuests != null && numGuests! > maxGuests!) {
+                        numGuests = maxGuests;
+                        _guestController.text = maxGuests.toString();
+                      }
+                    });
                   },
                 );
               },
             ),
             const SizedBox(height: 16),
+            
+            // Date Selection
             TextFormField(
+              controller: _dateController,
               readOnly: true,
               decoration: const InputDecoration(labelText: 'Select Date'),
-              controller: TextEditingController(
-                text: selectedDate == null
-                    ? ''
-                    : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-              ),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -118,11 +169,69 @@ class _MakeBookingState extends State<MakeBooking> {
                   lastDate: DateTime.now().add(const Duration(days: 30)),
                 );
                 if (picked != null) {
-                  setState(() => selectedDate = picked);
+                  setState(() {
+                    selectedDate = picked;
+                    _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+                  });
                 }
               },
             ),
             const SizedBox(height: 16),
+            
+            // Guest Number Input - Fixed to prevent rebuilds
+            TextFormField(
+              controller: _guestController,
+              decoration: InputDecoration(
+                labelText: maxGuests != null 
+                    ? 'Number of Guests (Max: $maxGuests)'
+                    : 'Number of Guests',
+                helperText: maxGuests != null 
+                    ? 'Maximum $maxGuests guests allowed'
+                    : null,
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                // Allow empty field while user is typing
+                if (value.isEmpty) {
+                  numGuests = null;
+                  return;
+                }
+                
+                final parsedValue = int.tryParse(value);
+                if (parsedValue != null && parsedValue > 0) {
+                  // Check against max capacity if available
+                  if (maxGuests != null && parsedValue > maxGuests!) {
+                    // Don't allow more than max capacity
+                    _guestController.text = maxGuests.toString();
+                    _guestController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _guestController.text.length),
+                    );
+                    numGuests = maxGuests;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Maximum $maxGuests guests allowed for this amenity'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    numGuests = parsedValue;
+                  }
+                } else {
+                  // Don't modify the controller text while user is typing
+                  numGuests = null;
+                }
+              },
+              onEditingComplete: () {
+                // Only validate and set default when user finishes editing
+                if (_guestController.text.isEmpty || numGuests == null || numGuests! <= 0) {
+                  _guestController.text = '1';
+                  numGuests = 1;
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            // Time Selection
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Select Time Slot'),
               value: selectedTime,
@@ -134,17 +243,27 @@ class _MakeBookingState extends State<MakeBooking> {
               },
             ),
             const SizedBox(height: 32),
+            
+            // Confirm Button
             ElevatedButton(
               onPressed: () async {
+                // Validate numGuests before proceeding
+                if (_guestController.text.isEmpty || numGuests == null || numGuests! <= 0) {
+                  _guestController.text = '1';
+                  numGuests = 1;
+                }
+                
                 if (selectedAmenity != null &&
                     selectedDate != null &&
                     selectedTime != null &&
+                    numGuests != null &&
+                    numGuests! > 0 &&
                     id != null) {
                   final dateOnly = DateTime(
                     selectedDate!.year,
                     selectedDate!.month,
                     selectedDate!.day,
-                  ).toIso8601String().split('T')[0]; // e.g., 2025-06-18
+                  ).toIso8601String().split('T')[0];
 
                   try {
                     final query = await _bookingService.checkBooking(
@@ -164,15 +283,15 @@ class _MakeBookingState extends State<MakeBooking> {
                       return;
                     }
                     
-                    // New booking data
                     Map<String, dynamic> bookingMap = {
                       'id': await _bookingService.getNewId(),
                       'group_id': widget.groupId,
+                      'amenity_id': selectedAmenity!,
+                      'num_guests': numGuests,
                       'user_id': id,
-                      'amenity': selectedAmenity,
                       'date': dateOnly,
                       'time': selectedTime,
-                      'status': BookingModel.pending, 
+                      'status': Booking.pending, 
                       'created_at': FieldValue.serverTimestamp(),
                       'updated_at': FieldValue.serverTimestamp(),
                     };
@@ -196,11 +315,17 @@ class _MakeBookingState extends State<MakeBooking> {
                       ),
                     ));
 
+                    // Reset form
                     setState(() {
+                      numGuests = 1;
                       selectedAmenity = null;
                       selectedDate = null;
                       selectedTime = null;
+                      maxGuests = null; // Reset max guests
                     });
+                    _guestController.text = '1';
+                    _dateController.clear();
+                    
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
