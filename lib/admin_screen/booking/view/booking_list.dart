@@ -1,4 +1,5 @@
 import 'package:branch_comm/mixins/name_fetching_mixin.dart';
+import 'package:branch_comm/services/database/amenity_service.dart';
 import 'package:branch_comm/services/database/booking_service.dart';
 import 'package:branch_comm/model/booking_model.dart';
 import 'package:branch_comm/services/database/group_service.dart';
@@ -18,6 +19,7 @@ class BookingList extends StatefulWidget {
 class _BookingListState extends State<BookingList> with NameFetchingMixin{
   final GroupService _groupService = GroupService();
   final BookingService _bookingService = BookingService(); 
+  final AmenityService _amenityService = AmenityService();
   final UserService _userService = UserService();
   String selectedStatus = 'All';
 
@@ -27,9 +29,10 @@ class _BookingListState extends State<BookingList> with NameFetchingMixin{
   
   @override
   UserService get userService => _userService;
-
   @override
   GroupService get groupService => _groupService;
+  @override
+  AmenityService get amenityService => _amenityService;
 
   @override
   Widget build(BuildContext context) {
@@ -131,20 +134,35 @@ class _BookingListState extends State<BookingList> with NameFetchingMixin{
 
                     return ListTile(
                       leading: Icon(statusIcon, color: statusColor),
-                      // title: FutureBuilder<string>Text(
-                      //   "${booking['amenity'] ?? 'No name'} @ ${getGroupName(booking['group_id'])}", 
-                      // ),
-                      title: FutureBuilder<String>(
-                        future: getGroupName(booking['group_id']),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Text('Loading group...');
-                          }
-                          return Text(
-                            "${booking['amenity'] ?? 'No name'} @  ${snapshot.data ?? 'Unknown Group'}"
-                          );
-                        },
+                      title: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FutureBuilder<String>(
+                            future: getAmenityName(booking['amenity_id']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Text('Loading amenity...');
+                              }
+                              if (snapshot.hasError) {
+                                return const Text('Error loading amenity');
+                              }
+                              return Text("${snapshot.data ?? 'Unknown Amenity'} @ ");
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          FutureBuilder<String>(
+                            future: getGroupName(booking['group_id']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text('Loading group...');
+                              }
+                              return Text(
+                                snapshot.data ?? 'Unknown group'
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

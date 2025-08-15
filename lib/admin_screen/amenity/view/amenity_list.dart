@@ -2,6 +2,7 @@ import 'package:branch_comm/admin_screen/amenity/view/create_amenity.dart';
 import 'package:branch_comm/admin_screen/amenity/view/edit_amenity.dart';
 import 'package:branch_comm/model/amenity_model.dart';
 import 'package:branch_comm/services/database/amenity_service.dart';
+import 'package:branch_comm/utils/helpers/amenity_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -67,14 +68,20 @@ class _AmenityListState extends State<AmenityList> {
                   itemCount: filteredAmenities.length,
                   itemBuilder: (context, index) {
                     final amenity = filteredAmenities[index];
+
+                    final status = amenity['status'] as int?;
+                    final statusColor = AmenityHelpers.getStatusColor(status);
+                    final statusIcon = AmenityHelpers.getStatusIcon(status);
+
                     return ListTile(
+                      leading: Icon(statusIcon, color: statusColor),
                       title: Text(amenity['amenity_name']),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(amenity['description'] ?? ''),
                           const SizedBox(height: 4),
-                          Text("Status: ${Amenity.statusCodeToName(amenity['status'])}", style: TextStyle(color: Colors.grey[700])),
+                          Text("Status: ${Amenity.statusCodeToName(amenity['status'])}", style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       isThreeLine: true,

@@ -38,7 +38,7 @@ class _AppointmentState extends State<Appointment> {
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const UpcomingAppointments()),
+              MaterialPageRoute(builder: (_) => UpcomingAppointments(groupId: widget.groupId)),
             ),
           ),
           const Divider(),
@@ -48,7 +48,7 @@ class _AppointmentState extends State<Appointment> {
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const PastAppointments()),
+              MaterialPageRoute(builder: (_) => PastAppointments(groupId: widget.groupId)),
             ),
           ),
           const Divider()

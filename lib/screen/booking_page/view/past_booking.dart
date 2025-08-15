@@ -1,8 +1,15 @@
 import 'package:branch_comm/services/database/booking_service.dart';
+import 'package:branch_comm/utils/date/data_range.dart';
 import 'package:branch_comm/widgets/custom_appbar.dart';
+import 'package:branch_comm/widgets/filter/date_range_filter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/services/shared_pref.dart';
+import 'package:branch_comm/services/database/group_service.dart';
+import 'package:branch_comm/services/database/user_service.dart';
+import 'package:branch_comm/utils/helpers/booking_helpers.dart';
+import 'package:branch_comm/services/database/amenity_service.dart';
+import 'package:branch_comm/mixins/name_fetching_mixin.dart';
 
 class PastBookings extends StatefulWidget {
   final String groupId;
@@ -12,11 +19,22 @@ class PastBookings extends StatefulWidget {
   State<PastBookings> createState() => _PastBookingsState();
 }
 
-class _PastBookingsState extends State<PastBookings> {
-  DateTime? filterDate;
+class _PastBookingsState extends State<PastBookings> with NameFetchingMixin {
+  DateTime? startDate;
+  DateTime? endDate;
   String? name, userId, email, groupId;
   final BookingService bookingService = BookingService();
+  final UserService _userService = UserService();
+  final GroupService _groupService = GroupService();
+  final AmenityService _amenityService = AmenityService();
   
+  @override
+  UserService get userService => _userService;
+  @override
+  GroupService get groupService => _groupService;
+  @override
+  AmenityService get amenityService => _amenityService;
+
   Future<void> getTheSharedPref() async {
     final user = await SharedpreferenceHelper().getUser();
 
@@ -34,6 +52,13 @@ class _PastBookingsState extends State<PastBookings> {
     }
   }
 
+  void _onDateRangeChanged(DateTime? start, DateTime? end) {
+    setState(() {
+      startDate = start;
+      endDate = end;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -42,49 +67,16 @@ class _PastBookingsState extends State<PastBookings> {
 
   @override
   Widget build(BuildContext context) {
-    final formattedFilterDate = filterDate != null
-        ? "${filterDate!.year}-${filterDate!.month.toString().padLeft(2, '0')}-${filterDate!.day.toString().padLeft(2, '0')}"
-        : null;
-
     return Scaffold(
       appBar: CustomAppBar (title:'Past Bookings'),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    filterDate == null
-                        ? "No date selected"
-                        : formattedFilterDate!,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setState(() => filterDate = picked);
-                    }
-                  },
-                ),
-                if (filterDate != null)
-                  TextButton(
-                    onPressed: () {
-                      setState(() => filterDate = null);
-                    },
-                    child: const Text("Clear"),
-                  ),
-              ],
-            ),
+          DateRangeFilterWidget(
+            startDate: startDate,
+            endDate: endDate,
+            onDateRangeChanged: _onDateRangeChanged,
+            showPresets: true,
+            showChips: true,
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
@@ -104,9 +96,10 @@ class _PastBookingsState extends State<PastBookings> {
                 }
 
                 final docs = snapshot.data!.docs.where((doc) {
-                  if (filterDate == null) return true;
-                  final docDate = doc['date'];
-                  return docDate == formattedFilterDate;
+                  final data = doc.data() as Map<String, dynamic>;
+                  final dateString = data['date'] as String;
+                  final appointmentDate = DateTime.parse(dateString); // Parse the string
+                  return DateRangeUtils.isDateInRange(appointmentDate, startDate, endDate);
                 }).toList();
 
                 if (docs.isEmpty) {
@@ -117,10 +110,61 @@ class _PastBookingsState extends State<PastBookings> {
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final booking = docs[index].data() as Map<String, dynamic>;
-                    return ListTile(
-                      leading: const Icon(Icons.check_circle, color: Colors.green),
-                      title: Text(booking['amenity'] ?? 'Unknown'),
-                      subtitle: Text("Date: ${booking['date']} • Time: ${booking['time']}"),
+                    
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.check_circle, color: Colors.green),
+                        title: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FutureBuilder<String>(
+                              future: getAmenityName(booking['amenity_id']),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Text('Loading amenity...');
+                                }
+                                if (snapshot.hasError) {
+                                  return const Text('Error loading amenity');
+                                }
+                                return Text("${snapshot.data ?? 'Unknown Amenity'} @ ");
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            FutureBuilder<String>(
+                              future: getGroupName(booking['group_id']),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Text('Loading group...');
+                                }
+                                return Text(
+                                  snapshot.data ?? 'Unknown group'
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            //status
+                            Text(
+                              "Status: ${BookingHelpers.getStatusText(booking['status'])}",
+                              style: TextStyle(
+                                color: BookingHelpers.getStatusColor(booking['status']),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              "Date: ${booking['date']} • Time: ${booking['time']}"
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );

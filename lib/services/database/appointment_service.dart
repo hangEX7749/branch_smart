@@ -7,22 +7,22 @@ class AppointmentService {
     return _appointments.doc().id;
   }
 
-  Stream<QuerySnapshot> getUserAppointments(String userId) {
+  Stream<QuerySnapshot> getUserAppointments(String userId, String groupId) {
     final now = Timestamp.now();
     return _appointments
         .where('user_id', isEqualTo: userId)
         .where('invite_datetime', isGreaterThan: now)
-        //.where('status', isEqualTo: 10)
+        .where('group_id', isEqualTo: groupId)
         .orderBy('invite_datetime', descending: false)
         .snapshots();
   }
 
-  Stream<QuerySnapshot> getPastAppointments(String userId) {
+  Stream<QuerySnapshot> getPastAppointments(String userId, String groupId) {
     final now = Timestamp.now();
     return _appointments
         .where('user_id', isEqualTo: userId)
         .where('invite_datetime', isLessThan: now)
-        //.where('status', isEqualTo: 10)
+        .where('group_id', isEqualTo: groupId)
         .orderBy('invite_datetime', descending: true)
         .snapshots();
   }
