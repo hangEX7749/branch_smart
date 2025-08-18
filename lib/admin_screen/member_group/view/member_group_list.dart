@@ -141,7 +141,7 @@ class _MemberGroupListState extends State<MemberGroupList> with NameFetchingMixi
                                     'Member: ${snapshot.data ?? 'Unknown User'}');
                               },
                             ),
-                            const SizedBox(height: 4),
+                          const SizedBox(height: 4),
                             Text(
                               'IDs: Group($groupId) | User($userId)',
                               style: Theme.of(context)

@@ -7,7 +7,7 @@ class SharedpreferenceHelper {
   static const String userEmailKey = 'USEREMAILKEY';
   static const String userImageKey = 'USERIMAGEKEY';
   static const String userPhoneNumberKey = 'USERPHONEKEY';
-  static const String userStatusKey = 'USERSTATUSKEY';
+  static const int userStatusKey = 30;
   static const String userAddressKey = 'USERADDRESSKEY';
 
   Future<bool> clearAllPref() async {
@@ -43,7 +43,6 @@ class SharedpreferenceHelper {
       id: prefs.getString(userIdKey) ?? '',
       name: prefs.getString(userNameKey) ?? '',
       email: prefs.getString(userEmailKey) ?? '',
-      status: prefs.getString(userStatusKey) ?? '',
       phoneNumber: prefs.getString(userPhoneNumberKey) ?? '',
       //image: prefs.getString(userImageKey),
     );

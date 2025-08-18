@@ -134,7 +134,7 @@ class _BookingListState extends State<BookingList> with NameFetchingMixin{
 
                     return ListTile(
                       leading: Icon(statusIcon, color: statusColor),
-                      title: Row(
+                      title: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           FutureBuilder<String>(
@@ -146,7 +146,7 @@ class _BookingListState extends State<BookingList> with NameFetchingMixin{
                               if (snapshot.hasError) {
                                 return const Text('Error loading amenity');
                               }
-                              return Text("${snapshot.data ?? 'Unknown Amenity'} @ ");
+                              return Text(snapshot.data ?? 'Unknown Amenity');
                             },
                           ),
                           const SizedBox(width: 8),

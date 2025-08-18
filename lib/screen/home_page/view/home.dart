@@ -239,7 +239,7 @@ class _HomeState extends State<Home> {
                     _buildServiceTile(Icons.people_alt, "Members", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => MemberListPage()),
+                        MaterialPageRoute(builder: (_) => MemberListPage(groupId: userGroupId!)),
                       );
                     }),                  
                     _buildServiceTile(Icons.chat_bubble_outline, "Community Wall", () {

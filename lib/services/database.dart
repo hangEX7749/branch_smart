@@ -4,15 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
 
-  Future addUserDetails(Map<String, dynamic> userInfoMap, String id) async {
+  Future<bool> addUserDetails(Map<String, dynamic> userInfoMap, String id) async {
     try {
-      return await FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection("users")
           .doc(id)
           .set(userInfoMap);
+      return true;
     } catch (e) {
-      
       print(e.toString());
+      return false;
     }
   }
 
