@@ -2,6 +2,7 @@ import 'package:branch_comm/model/member_model.dart';
 import 'package:branch_comm/screen/account_page/utils/index.dart';
 import 'package:branch_comm/services/database.dart';
 import 'package:branch_comm/services/widget_support.dart';
+import 'package:branch_comm/utils/bcrypt.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -14,16 +15,54 @@ class _SignUpState extends State<SignUp> {
 
   final UserService _userService = UserService();
 
-  String? name, email, password, phone;
+  String? name, email, password, encryptPassword, phone;
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController(); 
   TextEditingController passwordController = TextEditingController();
+  TextEditingController encryptPasswordController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
+  // Enhanced password validator
+  // String? _validatePassword(String? value) {
+  //   if (value == null || value.isEmpty) {
+  //     return 'Please enter your password';
+  //   }
+    
+  //   if (value.length < 8) {
+  //     return 'Password must be at least 8 characters long';
+  //   }
+    
+  //   if (!value.contains(RegExp(r'[A-Z]'))) {
+  //     return 'Password must contain at least one uppercase letter';
+  //   }
+    
+  //   if (!value.contains(RegExp(r'[a-z]'))) {
+  //     return 'Password must contain at least one lowercase letter';
+  //   }
+    
+  //   if (!value.contains(RegExp(r'[0-9]'))) {
+  //     return 'Password must contain at least one number';
+  //   }
+    
+  //   if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+  //     return 'Password must contain at least one special character';
+  //   }
+    
+  //   return null;
+  // }
+
+  // Check if passwords match
+  String? _validatePasswordMatch(String? value) {
+    if (value != passwordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   registration() async {
-    if (name != null && email != null && password != null) {
+    if (name != null && email != null && password != null && encryptPassword != null && phone != null) {
       try {
         
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -39,7 +78,7 @@ class _SignUpState extends State<SignUp> {
           "email": email,
           "phone": phone,
           "password": password,
-          //"wallet": "0",
+          "encrypt_password": EncryptionService.hashPassword(encryptPassword!), 
           "status":  Member.active,
           "createdAt": DateTime.now().toIso8601String(), 
           "updatedAt": DateTime.now().toIso8601String(),
@@ -254,6 +293,7 @@ class _SignUpState extends State<SignUp> {
                                       }
                                       return null;
                                     },
+                                    //validator: _validatePassword,
                                     obscureText: true,
                                     controller: passwordController,
                                     decoration: InputDecoration(
@@ -266,6 +306,29 @@ class _SignUpState extends State<SignUp> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
+                                Text(
+                                  "Confirm Password",
+                                  style: AppWidget.signUpTextFieldStyle(),
+                                ),
+                                const SizedBox(height: 5),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFececf8),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: TextFormField(
+                                    validator: _validatePasswordMatch,
+                                    obscureText: true,
+                                    controller: encryptPasswordController,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Confirm your password",
+                                      prefixIcon: Icon(
+                                        Icons.lock_outline,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Text(
                                   "Phone",
                                   style: AppWidget.signUpTextFieldStyle(),
@@ -303,6 +366,7 @@ class _SignUpState extends State<SignUp> {
                                         name = nameController.text;
                                         email = emailController.text;
                                         password = passwordController.text;
+                                        encryptPassword = passwordController.text;
                                         phone = phoneController.text;
                                       });
                                       registration();

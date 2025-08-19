@@ -1,3 +1,5 @@
+import 'package:branch_comm/admin_screen/home/view/home.dart';
+import 'package:branch_comm/services/sigin_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/screen/sign_in/view/signin.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,35 +35,101 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      // Initial route based on authentication state
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(); // Show a loading screen
-          }
-          
-          // Explicitly handle null user (logged out)
-          if (snapshot.data == null) {
-            return const SignIn();
-          }
-          
-          return const Home();
-        },
-      ),
       // Define your named routes
+      home: AuthWrapper(),
       routes: {
         '/signin': (context) => const SignIn(),
         '/home': (context) => const Home(),
-      },
-      // Optional: Handle routes not defined above
-      onGenerateRoute: (settings) {
-        // You can add more route handling here if needed
-        return null;
+        '/admin': (context) => const AdminHome(),
       },
       // Optional: Fallback for unknown routes
       onUnknownRoute: (settings) {
         return MaterialPageRoute(builder: (context) => const SignIn());
+      },
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // User not authenticated
+        if (snapshot.data == null) {
+          return const SignIn();
+        }
+
+        // User is authenticated, now check their role
+        return FutureBuilder<UserRole?>(
+          future: SiginAuth.getUserRole(),
+          builder: (context, roleSnapshot) {
+            if (roleSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Loading...'),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            //print("User role: ${roleSnapshot.data}");
+
+            // Update last login
+            SiginAuth.updateLastLogin();
+
+            // Handle different role scenarios
+            if (roleSnapshot.data == UserRole.admin) {
+              return const AdminHome();
+            } else if (roleSnapshot.data == UserRole.user) {
+              return const Home();
+            } else {
+
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.orange),
+                      SizedBox(height: 16),
+                      Text(
+                        'Account not found in system',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Please contact administrator',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                        },
+                        child: Text('Sign Out'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          },
+        );
       },
     );
   }

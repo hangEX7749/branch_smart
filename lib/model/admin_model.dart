@@ -3,7 +3,7 @@ class Admin {
   String id;
   String name;
   String email;
-  String status;
+  int status;
 
   Admin({
     required this.id,
