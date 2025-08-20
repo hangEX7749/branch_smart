@@ -16,21 +16,24 @@ class BottomNav extends StatelessWidget {
   void _handleTap(int index) {
     switch (index) {
       case 0:
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const Home()),
+          (route) => false,
         );
         break;
       case 1:
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const QRScannerPage()),
+          (route) => false,
         );
         break;
       case 2:
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => Account()),
+          (route) => false,
         );
         break;
     }

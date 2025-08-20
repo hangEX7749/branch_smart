@@ -1,4 +1,5 @@
 import 'package:branch_comm/admin_screen/sign_in/view/signin.dart';
+import 'package:branch_comm/screen/forgot_password/view/forgot_password_front.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/screen/home_page/view/home.dart';
@@ -161,8 +162,9 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Container(
-        color: Colors.white,
+        color: Colors.black,
         child: Stack(
           children: [
             Container(
@@ -190,7 +192,7 @@ class _SignInState extends State<SignIn> {
             ),
             Container(
               margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height / 3.3,
+                  top: MediaQuery.of(context).size.height / 3.6,
                   left: 20,
                   right: 20
               ),
@@ -275,14 +277,27 @@ class _SignInState extends State<SignIn> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                "Forgot Password?",
-                                style: AppWidget.simpleTextFieldStyle(),
-                              ),
-                            ],
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ForgotPasswordFront(),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Forgot Password?",
+                                  style: AppWidget.simpleTextFieldStyle().copyWith(
+                                    color: Colors.blue, fontSize: 16,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 20),
                           GestureDetector(

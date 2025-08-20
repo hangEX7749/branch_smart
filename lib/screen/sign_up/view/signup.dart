@@ -147,16 +147,15 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Container(
-        color: Colors.white,
+        color: Colors.black,
         child: Form(
           key: _formKey,
           child: Stack(
             children: [
               Container(
-                margin: EdgeInsets.only(
-                  top: 30,
-                ),
+                margin: EdgeInsets.only(top: 30),
                 height: MediaQuery.of(context).size.height / 2.5,
                 padding: const EdgeInsets.only(top: 10),
                 width: MediaQuery.of(context).size.width,
@@ -181,7 +180,7 @@ class _SignUpState extends State<SignUp> {
               // Single scrollable container
               Container(
                 margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height / 3.3,
+                  top: MediaQuery.of(context).size.height / 3.6,
                   left: 20,
                   right: 20
                 ),

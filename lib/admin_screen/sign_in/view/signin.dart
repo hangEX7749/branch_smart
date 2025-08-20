@@ -109,8 +109,9 @@ class _AdminSignInState extends State<AdminSignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Container(
-        color: Colors.white,
+        color: Colors.black,
         child: Stack(
           children: [
             Container(
@@ -138,7 +139,7 @@ class _AdminSignInState extends State<AdminSignIn> {
             ),
             Container(
               margin: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height / 3.3,
+                top: MediaQuery.of(context).size.height / 3.6,
                 left: 20,
                 right: 20
               ),
