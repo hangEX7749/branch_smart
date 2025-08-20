@@ -17,11 +17,45 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
 
   String? email, password;
+  final _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController(); 
   TextEditingController passwordController = TextEditingController();
 
+  // Email validator function
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    
+    // Basic email format validation
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
+    }
+    
+    return null;
+  }
+
+  // Password validator function
+  String? _validatePassword(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Password is required';
+    }
+    
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    
+    return null;
+  }
+
   userSignIn() async {
     try {
+      if (!_formKey.currentState!.validate()) {
+        // Form validation will show individual field errors
+        return;
+      }
+
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email!, password: password!);
       var userData = await UserAuthData().getUserData(email!);
 
@@ -40,8 +74,9 @@ class _SignInState extends State<SignIn> {
         if (!mounted) return;
         if (!saved) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar( 
-              content: Text("Failed to save pref user data."),
+            const SnackBar( 
+              content: Text("Failed to save user data"),
+              backgroundColor: Colors.red,
             ),
           );
           return;
@@ -51,50 +86,74 @@ class _SignInState extends State<SignIn> {
         
         if (saved) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               backgroundColor: Colors.green,
               content: Text(
-                "User SignIn Successfully",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                "Signed in successfully!",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
               ),
-              duration: Duration(seconds: 4),
+              duration: Duration(seconds: 2),
             ),
           );
 
-          await Future.delayed(const Duration(milliseconds: 100)); // Short delay
+          await Future.delayed(const Duration(milliseconds: 100));
           
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => Home()),
-            (route) => false, // Remove all previous routes
+            (route) => false,
           );
         }
+
+        //Reset form
+        _formKey.currentState!.reset();
 
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("No user data found for the email: $email"),
+            content: Text("No account found with email: $email"),
+            backgroundColor: Colors.orange,
           ),
         );
       }
-    } on FirebaseException catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
-      String errorMsg = "An unexpected error occurred.";
-      if (e.code == 'user-not-found') {
-        errorMsg = "No user found for that email.";
-      } else if (e.code == 'wrong-password') {
-        errorMsg = "Wrong password provided.";
-      } else if (e.code == 'invalid-email') {
-        errorMsg = "The email address is badly formatted.";
-      } else if (e.code == 'network-request-failed') {
-        errorMsg = "Network error, please check your connection.";
+      String errorMsg = "An unexpected error occurred";
+      switch (e.code) {
+        case 'user-not-found':
+          errorMsg = "No account found with this email";
+          break;
+        case 'wrong-password':
+          errorMsg = "Incorrect password";
+          break;
+        case 'invalid-email':
+          errorMsg = "Invalid email format";
+          break;
+        case 'user-disabled':
+          errorMsg = "This account has been disabled";
+          break;
+        case 'too-many-requests':
+          errorMsg = "Too many failed attempts. Please try again later";
+          break;
+        case 'network-request-failed':
+          errorMsg = "Network error. Please check your connection";
+          break;
+        case 'invalid-credential':
+          errorMsg = "Invalid email or password";
+          break;
+        default:
+          errorMsg = "Sign in failed. Please try again";
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
       );
     }
   }
@@ -107,15 +166,13 @@ class _SignInState extends State<SignIn> {
         child: Stack(
           children: [
             Container(
-              margin: EdgeInsets.only(
-                top: 30,
-              ),
+              margin: const EdgeInsets.only(top: 30),
               height: MediaQuery.of(context).size.height / 2.5,
               padding: const EdgeInsets.only(top: 10),
               width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 0, 0, 0),
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(40),
                   bottomRight: Radius.circular(40),
                 ),
@@ -149,161 +206,154 @@ class _SignInState extends State<SignIn> {
                   ),
                   height: MediaQuery.of(context).size.height / 1.65,
                   child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        Center(
-                          child: Text(
-                            "Log In",
-                            style: AppWidget.headlineTextFieldStyle(),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          Center(
+                            child: Text(
+                              "Log In",
+                              style: AppWidget.headlineTextFieldStyle(),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Email",
-                          style: AppWidget.signUpTextFieldStyle(),
-                        ),
-                        const SizedBox(height: 5),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Color(0xFFececf8),
-                            borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 10),
+                          Text(
+                            "Email",
+                            style: AppWidget.signUpTextFieldStyle(),
                           ),
-                          child: TextField(
-                            controller: emailController,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Enter your email",
-                              prefixIcon: Icon(
-                                Icons.email_outlined,
+                          const SizedBox(height: 5),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFececf8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: TextFormField(
+                              controller: emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: _validateEmail,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "Enter your email",
+                                prefixIcon: Icon(Icons.email_outlined),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                errorStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.red,
+                                  height: 1.5,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Password",
-                          style: AppWidget.signUpTextFieldStyle(),
-                        ),
-                        const SizedBox(height: 5),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Color(0xFFececf8),
-                            borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 10),
+                          Text(
+                            "Password",
+                            style: AppWidget.signUpTextFieldStyle(),
                           ),
-                          child: TextField(
-                            obscureText: true,
-                            controller: passwordController,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Enter your password",
-                              prefixIcon: Icon(
-                                Icons.password_outlined,
+                          const SizedBox(height: 5),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFececf8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: TextFormField(
+                              obscureText: true,
+                              controller: passwordController,
+                              validator: _validatePassword,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "Enter your password",
+                                prefixIcon: Icon(Icons.password_outlined),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                errorStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.red,
+                                  height: 1.5,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              "Forgot Password?",
-                              style: AppWidget.simpleTextFieldStyle(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        GestureDetector(
-                          onTap: () {
-                            email = emailController.text.trim();
-                            password = passwordController.text.trim();
-                            if (email != null && password != null) {
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                "Forgot Password?",
+                                style: AppWidget.simpleTextFieldStyle(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          GestureDetector(
+                            onTap: () {
+                              email = emailController.text.trim();
+                              password = passwordController.text.trim();
                               userSignIn();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Please fill in all fields.",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      backgroundColor: Colors.red,
-                                      color: Colors.white,
-                                    ),
+                            },
+                            child: Center(
+                              child: Container(
+                                width: 200,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Log In",
+                                    style: AppWidget.boldWhiteTextFieldStyle(),
                                   ),
                                 ),
-                              );
-                            }
-                          },
-                          child: Center(
-                            child: Container(
-                              width: 200,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.deepOrange,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "Log In",
-                                  style: AppWidget.boldWhiteTextFieldStyle(),
-                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Don't have an account?",
-                              style: AppWidget.simpleTextFieldStyle(),
-                            ),
-                            const SizedBox(width: 10),
-                            GestureDetector(
-                              onTap: () {
-
-                                setState(() {
-                                  email = emailController.text;
-                                  password = passwordController.text;
-                                });
-
+                          const SizedBox(height: 30),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?",
+                                style: AppWidget.simpleTextFieldStyle(),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SignUp(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  "SignUp",
+                                  style: AppWidget.boldTextFieldStyle().copyWith(color: Colors.deepOrange),
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Center(
+                            child: TextButton(
+                              onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SignUp(),
-                                  ),
+                                  MaterialPageRoute(builder: (context) => const AdminSignIn()),
                                 );
                               },
-                              child: Text(
-                                "SignUp",
-                                style: AppWidget.boldTextFieldStyle(),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const AdminSignIn()),
-                              );
-                            },
-                            child: const Text(
-                              "Login as Admin",
-                              style: TextStyle(
-                                color: Colors.deepOrange,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                              child: const Text(
+                                "Login as Admin",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

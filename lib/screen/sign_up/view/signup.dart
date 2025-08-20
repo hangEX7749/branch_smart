@@ -240,6 +240,12 @@ class _SignUpState extends State<SignUp> {
                                       prefixIcon: Icon(
                                         Icons.person_outline,
                                       ),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      errorStyle: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red,
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -269,6 +275,12 @@ class _SignUpState extends State<SignUp> {
                                       hintText: "Enter your email",
                                       prefixIcon: Icon(
                                         Icons.email_outlined,
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      errorStyle: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red,
+                                        height: 1.5,
                                       ),
                                     ),
                                   ),
@@ -302,6 +314,12 @@ class _SignUpState extends State<SignUp> {
                                       prefixIcon: Icon(
                                         Icons.password_outlined,
                                       ),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      errorStyle: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red,
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -325,6 +343,12 @@ class _SignUpState extends State<SignUp> {
                                       hintText: "Confirm your password",
                                       prefixIcon: Icon(
                                         Icons.lock_outline,
+                                      ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      errorStyle: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red,
+                                        height: 1.5,
                                       ),
                                     ),
                                   ),
@@ -355,6 +379,12 @@ class _SignUpState extends State<SignUp> {
                                       prefixIcon: Icon(
                                         Icons.phone_outlined,
                                       ),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      errorStyle: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red,
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -377,7 +407,7 @@ class _SignUpState extends State<SignUp> {
                                       width: 200,
                                       height: 60,
                                       decoration: BoxDecoration(
-                                        color: Colors.deepOrange,
+                                        color: Colors.black,
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Center(
@@ -409,7 +439,9 @@ class _SignUpState extends State<SignUp> {
                                       },
                                       child: Text(
                                         "SignIn",
-                                        style: AppWidget.boldTextFieldStyle(),
+                                        style: AppWidget.boldTextFieldStyle().copyWith(
+                                          color: Colors.deepOrange,
+                                        ),
                                       ),
                                     )
                                   ],
