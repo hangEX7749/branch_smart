@@ -88,7 +88,7 @@ class AuthWrapper extends StatelessWidget {
               );
             }
 
-            //print("User role: ${roleSnapshot.data}");
+            print("User role: ${roleSnapshot.data}");
 
             // Update last login
             SiginAuth.updateLastLogin();
@@ -105,7 +105,7 @@ class AuthWrapper extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.orange),
+                      Icon(Icons.error_outline, size: 64, color: Colors.black),
                       SizedBox(height: 16),
                       Text(
                         'Account not found in system',
@@ -118,10 +118,17 @@ class AuthWrapper extends StatelessWidget {
                       ),
                       SizedBox(height: 24),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                        ),
                         onPressed: () async {
                           await FirebaseAuth.instance.signOut();
                         },
-                        child: Text('Sign Out'),
+                        child: Text(
+                          'Sign Out',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:branch_comm/services/shared_pref.dart';
+import 'package:branch_comm/services/admin_shared_pref.dart';
 
 enum UserRole {
   user,
@@ -19,6 +21,11 @@ class SiginAuth {
       User? currentUser = _auth.currentUser;
       if (currentUser == null) return false;
 
+      final admin = await AdminSharedPreferenceHelper().getAdmin();
+      if (admin['id'] == null || admin['id']!.isEmpty) return false;
+
+      print('Current user: ${currentUser}');
+
       DocumentSnapshot adminDoc = await _admins.doc(currentUser.uid).get();
 
       return adminDoc.exists;
@@ -32,11 +39,21 @@ class SiginAuth {
   static Future<bool> isUserInUserCollection() async {
     try {
       User? currentUser = _auth.currentUser;
+
+      print('Current user: ${currentUser?.email}');
+
+
+
       if (currentUser == null) return false;
 
-      DocumentSnapshot userDoc = await _users.doc(currentUser.uid).get();
+      final userDoc = await _users.where('email', isEqualTo: currentUser.email).get();
+      print('User document: ${userDoc.docs}');
+      if (userDoc.docs.isEmpty) {
+        return false;
+      }
 
-      return userDoc.exists;
+
+      return true;
     } catch (e) {
       //print('Error checking user collection: $e');
       return false;

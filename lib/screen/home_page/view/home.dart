@@ -97,7 +97,7 @@ class _HomeState extends State<Home> {
     } catch (e) {
       if (!mounted) return; // ✅ Prevent error UI after disposal
 
-      ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load member groups: ${e.toString()}'),
           backgroundColor: Colors.red,
