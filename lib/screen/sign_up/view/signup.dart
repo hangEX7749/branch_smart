@@ -1,6 +1,8 @@
 import 'package:branch_comm/model/member_model.dart';
 import 'package:branch_comm/screen/account_page/utils/index.dart';
 import 'package:branch_comm/services/database.dart';
+import 'package:branch_comm/services/database/admin_service.dart';
+import 'package:branch_comm/services/sigin_auth.dart';
 import 'package:branch_comm/services/widget_support.dart';
 import 'package:branch_comm/utils/bcrypt.dart';
 
@@ -14,6 +16,7 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {  
 
   final UserService _userService = UserService();
+  final AdminService _adminService = AdminService();
 
   String? name, email, password, encryptPassword, phone;
   TextEditingController nameController = TextEditingController();
@@ -64,21 +67,96 @@ class _SignUpState extends State<SignUp> {
   registration() async {
     if (name != null && email != null && password != null && encryptPassword != null && phone != null) {
       try {
+
+        //check email exists in admin and users collection
+        final emailExists = await _adminService.isEmailExists(email!);
+        final userEmailExists = await _userService.isEmailExists(email!);
         
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        final uid = await _adminService.getUidFromAdminEmail(email!);
+
+        if (emailExists && !userEmailExists) {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     backgroundColor: Colors.redAccent,
+          //     content: Text(
+          //       "Email already exists, please try another.",
+          //       style: AppWidget.simpleTextFieldStyle(),
+          //     ),
+          //     duration: Duration(seconds: 2),
+          //   ),
+          // );
+
+          final userId = await _userService.getNewId();
+
+          Map<String, dynamic> userInfoMap = {
+            "id": userId,
+            "uid": uid ?? 'uid',
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "password": password,
+            "encrypt_password": EncryptionService.hashPassword(encryptPassword!), 
+            "role": "user",
+            "status":  Member.active,
+            "createdAt": DateTime.now().toIso8601String(), 
+            "updatedAt": DateTime.now().toIso8601String(),
+          };
+
+          var proceed = await DatabaseMethods().addUserDetails(userInfoMap, userId);
+
+          if (!mounted) return;
+          if (!proceed) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: Colors.redAccent,
+                content: Text(
+                  "Error in registration, please try again.",
+                  style: AppWidget.simpleTextFieldStyle(),
+                ),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            return;
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green,
+              content: Text(
+                "User Registered Successfully",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              duration: Duration(seconds: 4),
+            ),
+          );
+
+          return;
+        }
+        
+        final newUserCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email!,
           password: password!,
         );
+        if (newUserCredential.user == null) {
+          throw FirebaseAuthException(code: 'user-not-created', message: 'Failed to create user.');
+        }
 
         final userId = await _userService.getNewId();
+        final newUser = newUserCredential.user!;
 
         Map<String, dynamic> userInfoMap = {
           "id": userId,
+          "uid": newUser.uid,
           "name": name,
           "email": email,
           "phone": phone,
           "password": password,
           "encrypt_password": EncryptionService.hashPassword(encryptPassword!), 
+          "role": "user",
           "status":  Member.active,
           "createdAt": DateTime.now().toIso8601String(), 
           "updatedAt": DateTime.now().toIso8601String(),

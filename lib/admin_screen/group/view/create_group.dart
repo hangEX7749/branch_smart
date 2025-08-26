@@ -32,7 +32,7 @@ class _CreateGroupState extends State<CreateGroup> {
     final admin = await AdminSharedPreferenceHelper().getAdmin();
     if (mounted) {
       setState(() {
-        adminId = admin['id'] ?? '';
+        adminId = admin.uid;
       });
     }
   }

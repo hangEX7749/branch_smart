@@ -1,3 +1,4 @@
+import 'package:branch_comm/model/admin_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminSharedPreferenceHelper {
@@ -28,15 +29,14 @@ class AdminSharedPreferenceHelper {
     ]).then((results) => results.every((success) => success));
   }
 
-  Future<Map<String, String?>> getAdmin() async {
+  Future<Admin> getAdmin() async {
     final prefs = await SharedPreferences.getInstance();
-    return {
-      'id': prefs.getString(adminIdKey),
-      'name': prefs.getString(adminNameKey),
-      'email': prefs.getString(adminEmailKey),
-      'status': prefs.getInt(adminStatusKey)?.toString(), // If status is stored as int
-      //'status': prefs.getString(adminStatusKey),
-    };
+    return Admin(
+      uid: prefs.getString(adminIdKey) ?? '',
+      name: prefs.getString(adminNameKey) ?? '',
+      email: prefs.getString(adminEmailKey) ?? '',
+      status: prefs.getInt(adminStatusKey) ?? 0
+    );
   }
 
   Future<String?> getAdminId() async {
@@ -56,6 +56,6 @@ class AdminSharedPreferenceHelper {
 
   Future<String?> getAdminStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(adminStatusKey);
+    return prefs.getInt(adminStatusKey)?.toString();
   }
 }

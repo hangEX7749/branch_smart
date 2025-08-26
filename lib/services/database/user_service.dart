@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserService {
   final _users = FirebaseFirestore.instance.collection("users");
@@ -6,6 +7,29 @@ class UserService {
   Future<String> getNewId() async {
     final docRef = _users.doc();
     return docRef.id; // Returns a new document ID
+  }
+
+  //check email exists in users collection
+  Future<bool> isEmailExists(String email) async {
+    try {
+      // Fetch sign-in methods for the email
+      final userDoc = await _users.where('email', isEqualTo: email).get();
+      
+      if (userDoc.docs.isNotEmpty) {
+        return true; // Email exists in admin collection
+      }
+
+      return false; // Email does not exist
+
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-email') {
+        //print('The email address is not valid.');
+      }
+      return false;
+    } catch (e) {
+      //print('Error checking email: $e');
+      return false;
+    }
   }
 
   Future<void> addUserDetails(Map<String, dynamic> data, String id) async {

@@ -1,3 +1,4 @@
+import 'package:branch_comm/model/admin_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -23,19 +24,24 @@ class _AddAdminState extends State<AddAdmin> {
 
     try {
       // 1. Create new admin in Firebase Auth
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final newAdminCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
+      if (newAdminCredential.user == null) {
+        throw FirebaseAuthException(code: 'user-not-created', message: 'Failed to create admin user.');
+      }
 
-      final newUser = userCredential.user!;
+      final newAdmin = newAdminCredential.user!;
       // 2. Add user data to Firestore with admin role
-      await FirebaseFirestore.instance.collection('admins').doc(newUser.uid).set({
-        'id': newUser.uid,
+      await FirebaseFirestore.instance.collection('admins').doc(newAdmin.uid).set({
+        'uid': newAdmin.uid,
         'name': name.trim(),
         'email': email.trim(),
+        'password': password,
         'editor_type': 100,
-        'status': 10, 
+        'role': 'admin',
+        'status': Admin.active, 
         'created_at': FieldValue.serverTimestamp(),
         'updated_at': FieldValue.serverTimestamp(),
       });

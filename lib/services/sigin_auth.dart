@@ -22,13 +22,14 @@ class SiginAuth {
       if (currentUser == null) return false;
 
       final admin = await AdminSharedPreferenceHelper().getAdmin();
-      if (admin['id'] == null || admin['id']!.isEmpty) return false;
+      if (admin.uid.isEmpty) return false;
 
-      print('Current user: ${currentUser}');
-
-      DocumentSnapshot adminDoc = await _admins.doc(currentUser.uid).get();
-
-      return adminDoc.exists;
+      final adminDoc = await _admins.where('uid', isEqualTo: currentUser.uid).get();
+      if (adminDoc.docs.isEmpty) {
+        return false;
+      }
+      return true;
+      
     } catch (e) {
       //print('Error checking admin collection: $e');
       return false;
@@ -39,20 +40,16 @@ class SiginAuth {
   static Future<bool> isUserInUserCollection() async {
     try {
       User? currentUser = _auth.currentUser;
-
-      print('Current user: ${currentUser?.email}');
-
-
-
       if (currentUser == null) return false;
 
-      final userDoc = await _users.where('email', isEqualTo: currentUser.email).get();
-      print('User document: ${userDoc.docs}');
+      final user = await SharedpreferenceHelper().getUser();
+      if (user.id.isEmpty) return false;
+
+      final userDoc = await _users.where('uid', isEqualTo: currentUser.uid).get();
+      //print('User document: ${userDoc.docs}');
       if (userDoc.docs.isEmpty) {
         return false;
       }
-
-
       return true;
     } catch (e) {
       //print('Error checking user collection: $e');
