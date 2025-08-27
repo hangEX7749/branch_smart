@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
@@ -12,7 +10,7 @@ class DatabaseMethods {
           .set(userInfoMap);
       return true;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       return false;
     }
   }
@@ -26,7 +24,7 @@ class DatabaseMethods {
 
       return true; // success
     } catch (e) {
-      print("Error updating user info: $e");
+      //print("Error updating user info: $e");
       return false; // failure
     }
   }
@@ -39,7 +37,7 @@ class DatabaseMethods {
           .set(userOrderMap);
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -50,7 +48,7 @@ class DatabaseMethods {
           .set(userOrderMap);
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -63,7 +61,7 @@ class DatabaseMethods {
           .snapshots();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
   }
@@ -76,7 +74,7 @@ class DatabaseMethods {
           .get();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
       throw Exception("Failed to fetch user email: $e");
     }
   }
@@ -89,7 +87,7 @@ class DatabaseMethods {
           .update({"wallet":amount});
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -101,7 +99,7 @@ class DatabaseMethods {
           .update({"password": password});
       return true; // Success
     } catch (e) {
-      print("Error updating password: $e");
+      //print("Error updating password: $e");
       return false; // Failure
     }
   }
@@ -114,7 +112,7 @@ class DatabaseMethods {
           .snapshots();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
   }
@@ -127,7 +125,7 @@ class DatabaseMethods {
           .update({"Status":"Delivered"});
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -141,7 +139,7 @@ class DatabaseMethods {
           .update({"Status":"Delivered"});
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -152,7 +150,7 @@ class DatabaseMethods {
           .snapshots();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
   }
@@ -165,7 +163,7 @@ class DatabaseMethods {
           .delete();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -177,7 +175,7 @@ class DatabaseMethods {
           .add(userOrderMap);
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -190,7 +188,7 @@ class DatabaseMethods {
           .snapshots();
     } catch (e) {
       
-      print(e.toString());
+      //print(e.toString());
       throw Exception("Failed to fetch user orders: $e");
     }
   }

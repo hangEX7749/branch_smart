@@ -107,6 +107,20 @@ class UserService {
     }
   }
 
+  //get uid by email
+  Future<String?> getUidFromUserEmail(String email) async {
+    try {
+      final userDoc = await _users.where('email', isEqualTo: email).get();
+      if (userDoc.docs.isNotEmpty) {
+        return userDoc.docs.first['uid']; // Return the document ID (uid)
+      }
+      return null; // Email not found
+    } catch (e) {
+      //print('Error fetching UID by email: $e');
+      return null;
+    }
+  }
+
   //get user name by id
   Future<String?> getUserNameById(String userId) async {
     final doc = await _users.doc(userId).get();

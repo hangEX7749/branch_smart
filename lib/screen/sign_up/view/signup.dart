@@ -64,162 +64,108 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
-  registration() async {
-    if (name != null && email != null && password != null && encryptPassword != null && phone != null) {
-      try {
+  Future<void> registration() async {
+    if (name == null || email == null || password == null || encryptPassword == null || phone == null) {
+      _showSnackbar("Missing required fields.", Colors.redAccent);
+      return;
+    }
 
-        //check email exists in admin and users collection
-        final emailExists = await _adminService.isEmailExists(email!);
-        final userEmailExists = await _userService.isEmailExists(email!);
-        
-        final uid = await _adminService.getUidFromAdminEmail(email!);
+    try {
+      // 🔹 Step 1: Check if email exists
+      final adminEmailExists = await _adminService.isEmailExists(email!);
+      final userEmailExists = await _userService.isEmailExists(email!);
+      final uid = await _adminService.getUidFromAdminEmail(email!);
 
-        if (emailExists && !userEmailExists) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(
-          //     backgroundColor: Colors.redAccent,
-          //     content: Text(
-          //       "Email already exists, please try another.",
-          //       style: AppWidget.simpleTextFieldStyle(),
-          //     ),
-          //     duration: Duration(seconds: 2),
-          //   ),
-          // );
-
-          final userId = await _userService.getNewId();
-
-          Map<String, dynamic> userInfoMap = {
-            "id": userId,
-            "uid": uid ?? 'uid',
-            "name": name,
-            "email": email,
-            "phone": phone,
-            "password": password,
-            "encrypt_password": EncryptionService.hashPassword(encryptPassword!), 
-            "role": "user",
-            "status":  Member.active,
-            "createdAt": DateTime.now().toIso8601String(), 
-            "updatedAt": DateTime.now().toIso8601String(),
-          };
-
-          var proceed = await DatabaseMethods().addUserDetails(userInfoMap, userId);
-
-          if (!mounted) return;
-          if (!proceed) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: Colors.redAccent,
-                content: Text(
-                  "Error in registration, please try again.",
-                  style: AppWidget.simpleTextFieldStyle(),
-                ),
-                duration: Duration(seconds: 2),
-              ),
-            );
-            return;
-          }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.green,
-              content: Text(
-                "User Registered Successfully",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              duration: Duration(seconds: 4),
-            ),
-          );
-
-          return;
-        }
-        
-        final newUserCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email!,
-          password: password!,
-        );
-        if (newUserCredential.user == null) {
-          throw FirebaseAuthException(code: 'user-not-created', message: 'Failed to create user.');
-        }
-
+      // 🔹 Step 2: If already in admin but not in users → Promote to user
+      if (adminEmailExists && !userEmailExists && uid != null) {
         final userId = await _userService.getNewId();
-        final newUser = newUserCredential.user!;
+        final userInfo = _buildUserInfoMap(userId, uid);
 
-        Map<String, dynamic> userInfoMap = {
-          "id": userId,
-          "uid": newUser.uid,
-          "name": name,
-          "email": email,
-          "phone": phone,
-          "password": password,
-          "encrypt_password": EncryptionService.hashPassword(encryptPassword!), 
-          "role": "user",
-          "status":  Member.active,
-          "createdAt": DateTime.now().toIso8601String(), 
-          "updatedAt": DateTime.now().toIso8601String(),
-        };
-
-        var proceed = await DatabaseMethods().addUserDetails(userInfoMap, userId);
-
+        final success = await DatabaseMethods().addUserDetails(userInfo, userId);
         if (!mounted) return;
-        if (!proceed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.redAccent,
-              content: Text(
-                "Error in registration, please try again.",
-                style: AppWidget.simpleTextFieldStyle(),
-              ),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          return;
-        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            content: Text(
-              "User Registered Successfully",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            duration: Duration(seconds: 4),
+        return success
+            ? _showSnackbar("User registered successfully", Colors.green)
+            : _showSnackbar("Error in registration, please try again.", Colors.redAccent);
+      }
+
+      // 🔹 Step 3: Otherwise, create new Firebase Auth user
+      final newUserCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email!.trim(), password: password!);
+
+      final newUser = newUserCredential.user;
+      if (newUser == null) {
+        throw FirebaseAuthException(code: 'user-not-created', message: 'Failed to create user.');
+      }
+
+      final userId = await _userService.getNewId();
+      final userInfo = _buildUserInfoMap(userId, newUser.uid);
+
+      final success = await DatabaseMethods().addUserDetails(userInfo, userId);
+      if (!mounted) return;
+
+      //if success show success message and return to previous screen
+      if (success) {
+        _showSnackbar("User registered successfully", Colors.green);
+        
+        //return to sign in screen
+        Navigator.push(context,
+          MaterialPageRoute(
+            builder: (context) => SignIn(),
           ),
         );
 
-      } on FirebaseException catch (e) {
-        if (e.code == 'weak-password') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.redAccent,
-              content: Text(
-                "The password provided is too weak.",
-                style: AppWidget.simpleTextFieldStyle(),
-              ),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        } else if (e.code == 'email-already-in-use') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.redAccent,
-              content: Text(
-                "The account already exists for that email.",
-                style: AppWidget.simpleTextFieldStyle(),
-              ),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
+      } else {
+        _showSnackbar("Error in registration, please try again.", Colors.redAccent);
       }
-    } 
+
+    } on FirebaseAuthException catch (e) {
+      _handleRegistrationError(e);
+    }
+  }
+
+  Map<String, dynamic> _buildUserInfoMap(String userId, String uid) {
+    return {
+      "id": userId,
+      "uid": uid,
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "password": password,
+      "encrypt_password": EncryptionService.hashPassword(encryptPassword!),
+      "role": "user",
+      "status": Member.active,
+      "createdAt": DateTime.now().toIso8601String(),
+      "updatedAt": DateTime.now().toIso8601String(),
+    };
+  }
+
+  void _showSnackbar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: color,
+        content: Text(
+          message,
+          style: AppWidget.simpleTextFieldStyle(),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _handleRegistrationError(FirebaseAuthException e) {
+    String errorMsg;
+    switch (e.code) {
+      case 'weak-password':
+        errorMsg = "The password provided is too weak.";
+        break;
+      case 'email-already-in-use':
+        errorMsg = "The account already exists for that email.";
+        break;
+      default:
+        errorMsg = e.message ?? "Something went wrong.";
+    }
+    if (mounted) _showSnackbar(errorMsg, Colors.redAccent);
   }
 
   @override

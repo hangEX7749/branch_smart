@@ -5,6 +5,16 @@ class AdminService {
   
   final _admins = FirebaseFirestore.instance.collection("admins");
 
+  Future<bool> addAdminDetails(Map<String, dynamic> data, String id) async {
+    try {
+      await _admins.doc(id).set(data);
+      return true;
+    } catch (e) {
+      //print("Error adding admin info: $e");
+      return false;
+    }
+  }
+
   //check email exists in admin collection
   Future<bool> isEmailExists(String email) async {
     try {
