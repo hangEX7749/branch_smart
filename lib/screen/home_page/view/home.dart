@@ -1,7 +1,5 @@
 import 'package:branch_comm/screen/home_page/utils/index.dart';
 
-//import 'package:lucide_icons/lucide_icons.dart'; // Optional for icons
-
 class Home extends StatefulWidget {
   const Home({super.key});
 

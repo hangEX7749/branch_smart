@@ -88,8 +88,6 @@ class AuthWrapper extends StatelessWidget {
               );
             }
 
-            print("User role: ${roleSnapshot.data}");
-
             // Update last login
             SiginAuth.updateLastLogin();
 

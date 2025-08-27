@@ -57,12 +57,10 @@ class _SignInState extends State<SignIn> {
         return;
       }
 
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email!, 
         password: password!
       );
-
-      print(userCredential);
 
       var userData = await UserAuthData().getUserData(email!);
 
@@ -75,7 +73,6 @@ class _SignInState extends State<SignIn> {
           userId: userDoc.id,
           userName: data["name"] ?? 'unknown',
           userEmail: email!,
-          
           //userImage: 'path/to/image.jpg', // Optional
         );
         
