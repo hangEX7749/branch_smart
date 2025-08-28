@@ -78,6 +78,7 @@ class _HomeState extends State<Home> {
       hasGroups = groupNames.isNotEmpty;
 
       if (!mounted) return; // ✅ Check before setState
+      
 
       setState(() {
         groupList = groupNames;

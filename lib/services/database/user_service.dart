@@ -56,8 +56,12 @@ class UserService {
     }
   }
 
-  Future<QuerySnapshot> getUserById(String id) {
-    return _users.where("id", isEqualTo: id).get();
+  Future<Map<String, dynamic>?> getUserById(String id) async {
+    final doc = await _users.doc(id).get();
+    if (doc.exists) {
+      return doc.data() as Map<String, dynamic>;
+    }
+    return null; // Amenity not found
   }
 
   Future<void> updateUserWallet(String amount, String id) async {

@@ -42,11 +42,8 @@ class _AccountState extends State<Account> {
         email = user.email;
       });
 
-      print('Loaded user data: id=$userId, name=$name, email=$email');
-      
-
     } catch (e) {
-      debugPrint('Error loading user data: $e');
+      //debugPrint('Error loading user data: $e');
     } finally {
       if (mounted) {
         setState(() {
