@@ -1,6 +1,8 @@
 import 'package:branch_comm/model/member_model.dart';
 import 'package:branch_comm/screen/account_page/utils/index.dart';
+import 'package:branch_comm/screen/account_page/view/change_password.dart';
 import 'package:branch_comm/screen/account_page/view/edit_user_info.dart';
+import 'package:branch_comm/screen/account_page/view/forgot_password.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Account extends StatefulWidget {
@@ -304,12 +306,12 @@ class _AccountState extends State<Account> {
               title: "Change Password",
               subtitle: "Update your account password",
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => ChangePasswordPage(userId: userId!),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangePassword(userId: userId!),
+                  ),
+                );
               },
             ),
 
@@ -320,12 +322,12 @@ class _AccountState extends State<Account> {
               title: "Forgot Password",
               subtitle: "Reset your password via email",
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => const ForgotPasswordPage(),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPassword(),
+                  ),
+                );
               },
             ),
 

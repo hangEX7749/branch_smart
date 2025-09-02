@@ -1,3 +1,4 @@
+import 'package:branch_comm/utils/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -70,7 +71,13 @@ class UserService {
 
   Future<bool> updateUserPassword(String password, String id) async {
     try {
-      await _users.doc(id).update({"password": password});
+      await _users.doc(id).update(
+        {
+          "password": password,
+          "encrypt_password": EncryptionService.hashPassword(password),
+          "updated_at": FieldValue.serverTimestamp(),
+        }
+      );
       return true;
     } catch (e) {
       //print("Error updating password: $e");

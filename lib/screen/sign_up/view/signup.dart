@@ -134,8 +134,8 @@ class _SignUpState extends State<SignUp> {
       "encrypt_password": EncryptionService.hashPassword(encryptPassword!),
       "role": "user",
       "status": Member.active,
-      "createdAt": DateTime.now().toIso8601String(),
-      "updatedAt": DateTime.now().toIso8601String(),
+      "created_at": DateTime.now().toIso8601String(),
+      "updated_at": DateTime.now().toIso8601String(),
     };
   }
 

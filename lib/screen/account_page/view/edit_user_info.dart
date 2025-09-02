@@ -1,6 +1,7 @@
 import 'package:branch_comm/screen/account_page/view/account.dart';
 import 'package:branch_comm/services/database/user_service.dart';
 import 'package:branch_comm/services/shared_pref.dart';
+import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
 class EditUserInfo extends StatefulWidget {
@@ -74,10 +75,10 @@ class _EditUserInfoState extends State<EditUserInfo> {
         'name': nameController.text.trim(),
         'email': emailController.text.trim(),
         'phone': phoneController.text.trim(),
+        'updated_at': DateTime.now().toIso8601String(),
       };
 
-      final dbMethods = UserService();
-      final success = await dbMethods.editUserDetails(userInfoMap, widget.userId);
+      final success = await _userService.editUserDetails(userInfoMap, widget.userId);
 
       if (success) {
         
@@ -91,7 +92,7 @@ class _EditUserInfoState extends State<EditUserInfo> {
 
         if(!mounted) return;
         if (!saved) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            ScaffoldMessenger.of( context).showSnackBar(
             const SnackBar( 
               content: Text("Failed to save user data"),
               backgroundColor: Colors.red,
@@ -148,29 +149,7 @@ class _EditUserInfoState extends State<EditUserInfo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "User Information",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          if (hasChanges)
-            TextButton(
-              onPressed: isLoading ? null : _saveUserInfo,
-              child: Text(
-                "Save",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: isLoading ? Colors.grey : Theme.of(context).primaryColor,
-                ),
-              ),
-            ),
-        ],
-      ),
+      appBar: CustomAppBar(title: 'User Information'),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
