@@ -1,20 +1,44 @@
+import 'package:branch_comm/services/database/user_service.dart';
+import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ForgotPassword extends StatefulWidget {
-  const ForgotPassword({super.key});
+  final String? userId;
+  const ForgotPassword({super.key, this.userId});
 
   @override
   State<ForgotPassword> createState() => _ForgotPasswordState();
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+
+  final UserService _userService = UserService();
+
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   bool isLoading = false;
   bool emailSent = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    if (widget.userId != null) {
+      final userData = await _userService.getUserById(widget.userId!);
+
+      if (userData != null && mounted) {
+        setState(() {
+          emailController.text = userData['email'] ?? '';
+        });
+      }
+    }
+  }
 
   Future<void> _sendPasswordResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
@@ -172,41 +196,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ],
           ),
         ),
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    emailSent = false;
-                    emailController.clear();
-                  });
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text("Send to Different Email"),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text("Back to Account"),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -257,6 +246,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           key: _formKey,
           child: TextFormField(
             controller: emailController,
+            readOnly: true,
             keyboardType: TextInputType.emailAddress,
             autofocus: true,
             decoration: InputDecoration(
@@ -319,25 +309,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   ),
           ),
         ),
-        const SizedBox(height: 16),
-        
-        // Back Button
-        SizedBox(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              "Back to Account",
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -345,15 +316,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Forgot Password",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: CustomAppBar(title: 'Forgot Password'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(

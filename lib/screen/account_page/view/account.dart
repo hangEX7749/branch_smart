@@ -325,7 +325,7 @@ class _AccountState extends State<Account> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ForgotPassword(),
+                    builder: (context) => ForgotPassword(userId: userId!),
                   ),
                 );
               },
