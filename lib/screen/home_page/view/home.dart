@@ -119,7 +119,7 @@ class _HomeState extends State<Home> {
             ),
           );
           hasAmenities = false;
-          userGroupId = null;
+          userGroupId = groupId;
         } else {
           hasAmenities = true;  
           userGroupId = groupId; 
@@ -241,10 +241,10 @@ class _HomeState extends State<Home> {
                         MaterialPageRoute(builder: (_) => MemberListPage(groupId: userGroupId!)),
                       );
                     }),                  
-                    _buildServiceTile(Icons.chat_bubble_outline, "Community Wall", () {
+                    _buildServiceTile(Icons.chat_bubble_outline, "Community", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => WallPage()),
+                        MaterialPageRoute(builder: (_) => WallPage(userId: id!, groupId: userGroupId!)),
                       );
                     }),
                   ],
