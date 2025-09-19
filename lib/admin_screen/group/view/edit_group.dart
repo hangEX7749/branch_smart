@@ -40,46 +40,46 @@ class _EditGroupState extends State<EditGroup> {
     _loadGroupData();
   }
 
-Future<void> _loadGroupData() async {
-  final data = await _groupService.getGroupById(widget.groupId);
-  final amenitySnap = await _amenityService.get();
+  Future<void> _loadGroupData() async {
+    final data = await _groupService.getGroupById(widget.groupId);
+    final amenitySnap = await _amenityService.get();
 
-  if (data == null) {
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Group not found'), backgroundColor: Colors.red),
-      );
+    if (data == null) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Group not found'), backgroundColor: Colors.red),
+        );
+      }
+      return;
     }
-    return;
+
+    // Load group info
+    groupName = data['group_name'] ?? '';
+    description = data['description'] ?? '';
+    status = data['status'] ?? Group.unknown;
+    _nameController.text = groupName;
+    _descController.text = description;
+
+    // Load all amenities
+    _amenities = amenitySnap.docs.map((doc) {
+      final a = doc.data();
+      return {
+        'id': doc.id,
+        'name': a['amenity_name'],
+      };
+    }).toList();
+
+    // Load selected amenity IDs from amenity_group
+    final selectedAmenitySnap = await _amenityGroupService.getAmenityGroupsByGroupId(widget.groupId);
+    _selectedAmenityIds = selectedAmenitySnap.docs
+        .map((doc) => doc.data()['amenity_id'] as String)
+        .toList();
+
+    setState(() {
+      isFetching = false;
+    });
   }
-
-  // Load group info
-  groupName = data['group_name'] ?? '';
-  description = data['description'] ?? '';
-  status = data['status'] ?? Group.unknown;
-  _nameController.text = groupName;
-  _descController.text = description;
-
-  // Load all amenities
-  _amenities = amenitySnap.docs.map((doc) {
-    final a = doc.data();
-    return {
-      'id': doc.id,
-      'name': a['amenity_name'],
-    };
-  }).toList();
-
-  // Load selected amenity IDs from amenity_group
-  final selectedAmenitySnap = await _amenityGroupService.getAmenityGroupsByGroupId(widget.groupId);
-  _selectedAmenityIds = selectedAmenitySnap.docs
-      .map((doc) => doc.data()['amenity_id'] as String)
-      .toList();
-
-  setState(() {
-    isFetching = false;
-  });
-}
 
   @override
   Widget build(BuildContext context) {

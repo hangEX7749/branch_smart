@@ -125,11 +125,17 @@ static void showDeleteMemberDialog(
             if (context.mounted) {
               if (proceed) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('User deleted successfully')),
+                  const SnackBar(
+                    content: Text('User deleted successfully'),
+                    backgroundColor: Colors.green
+                  ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error deleting user')),
+                  const SnackBar(
+                    content: Text('Error deleting user'),
+                    backgroundColor: Colors.red
+                  ),
                 );
               }
             }

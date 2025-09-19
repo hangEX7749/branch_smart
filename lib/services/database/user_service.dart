@@ -110,7 +110,19 @@ class UserService {
   
   Future<bool> deleteUser(String id) async {
     try {
+      // Delete from Firestore
       await _users.doc(id).delete();
+
+      // If the user being deleted is the currently logged-in user
+      //User? user = FirebaseAuth.instance.currentUser;
+
+      // print((user)?.uid);
+
+      // if (user != null) {
+      //   print('here');
+      //   await user.delete(); // Deletes from Firebase Authentication
+      // }
+
       return true;
     } catch (e) {
       //print("Error deleting user: $e");
@@ -139,5 +151,16 @@ class UserService {
       return doc['name'] as String?;
     }
     return null; // User not found
+  }
+
+  //update user
+  Future<bool> updateUser(String userId, Map<String, dynamic> data) async {
+    try {
+      await _users.doc(userId).update(data);
+      return true;
+    } catch (e) {
+      //print("Error updating user: $e");
+      return false;
+    }
   }
 }

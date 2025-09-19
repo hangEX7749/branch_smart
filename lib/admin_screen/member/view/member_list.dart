@@ -1,3 +1,4 @@
+import 'package:branch_comm/admin_screen/member/view/edit_member.dart';
 import 'package:branch_comm/admin_screen/member/widget/member_list_dialog.dart';
 import 'package:branch_comm/model/member_model.dart';
 import 'package:branch_comm/utils/helpers/member_helpers.dart';
@@ -163,7 +164,15 @@ class _MemberListState extends State<MemberList> {
                           icon: const Icon(Icons.more_vert),
                           onSelected: (value) {
                             // Handle menu actions
-                            if (value == 'changeStatus') {
+                            if (value == 'edit') {
+                              // Navigate to edit member page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditMember(memberId: member['id']),
+                                ),
+                              );
+                            } else if (value == 'changeStatus') {
                               // Show dialog to change member status
                               MemberListDialog.showStatusUpdateDialog(
                                 context,
@@ -186,6 +195,8 @@ class _MemberListState extends State<MemberList> {
                             }
                           },
                           itemBuilder: (context) => [
+                            //redirect to member details pages
+                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
                             const PopupMenuItem(value: 'changeStatus', child: Text('Change Status')),
                             const PopupMenuItem(value: 'delete', child: Text('Delete')),
                           ],
