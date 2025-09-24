@@ -49,7 +49,12 @@ class UserService {
 
   Future<bool> updateProfilePic(String imageUrl, String id) async {
     try {
-      await _users.doc(id).update({"profilePic": imageUrl});
+      await _users.doc(id).update(
+        {
+          "profile_pic_url": imageUrl,
+          "updated_at": FieldValue.serverTimestamp(),
+        }
+      );
       return true;
     } catch (e) {
       //print("Error updating profile picture: $e");

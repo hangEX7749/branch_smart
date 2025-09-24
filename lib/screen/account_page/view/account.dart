@@ -1,8 +1,10 @@
 import 'package:branch_comm/model/member_model.dart';
 import 'package:branch_comm/screen/account_page/utils/index.dart';
 import 'package:branch_comm/screen/account_page/view/change_password.dart';
+import 'package:branch_comm/screen/account_page/view/edit_profile_pic.dart';
 import 'package:branch_comm/screen/account_page/view/edit_user_info.dart';
 import 'package:branch_comm/screen/account_page/view/forgot_password.dart';
+import 'package:branch_comm/services/google_drive.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Account extends StatefulWidget {
@@ -110,10 +112,38 @@ class _AccountState extends State<Account> {
     }
   }
 
+  // Update your existing _buildProfileSection method in the Account page
   Future<Widget> _buildProfileSection() async {
     final localPath = '${(await getApplicationDocumentsDirectory()).path}/profile_$userId.jpg';
     final localFile = File(localPath);
-    final fileExists = localFile.existsSync();
+    
+    // Check for Google Drive synced image
+    final driveFileId = await SharedpreferenceHelper().getProfileImageDriveId(userId!);
+    ImageProvider? profileImage;
+    bool isFromDrive = false;
+
+    //print('Drive File ID: $driveFileId');
+
+    if (driveFileId != null) {
+      try {
+        // Try to load from Google Drive
+        final driveService = GoogleDriveService();
+        await driveService.initialize();
+        final imageData = await driveService.downloadImage(driveFileId);
+        
+        if (imageData != null) {
+          profileImage = MemoryImage(imageData);
+          isFromDrive = true;
+        }
+      } catch (e) {
+        //print('Failed to load from Google Drive: $e');
+      }
+    }
+
+    // Fallback to local file or default
+    profileImage ??= localFile.existsSync()
+        ? FileImage(localFile)
+        : const AssetImage('images/boy.jpg') as ImageProvider;
 
     return Card(
       elevation: 4,
@@ -123,22 +153,39 @@ class _AccountState extends State<Account> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => ProfilePicturePage(userId: userId!),
-                //   ),
-                // );
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePicturePage(userId: userId!),
+                  ),
+                );
+                
+                // Refresh the page if profile picture was updated
+                if (result == true) {
+                  setState(() {
+                    // Trigger rebuild
+                  });
+                }
               },
               child: Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[200],
-                    backgroundImage: fileExists
-                        ? FileImage(localFile)
-                        : const AssetImage('images/boy.jpg') as ImageProvider,
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: profileImage,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -146,11 +193,12 @@ class _AccountState extends State<Account> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: isFromDrive ? Colors.green : Colors.black,
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: const Icon(
-                        Icons.edit,
+                      child: Icon(
+                        isFromDrive ? Icons.cloud_done : Icons.edit,
                         size: 16,
                         color: Colors.white,
                       ),
@@ -175,6 +223,32 @@ class _AccountState extends State<Account> {
                 color: Colors.grey[600],
               ),
             ),
+            if (isFromDrive) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.cloud_done, size: 14, color: Colors.green[700]),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Synced with Drive',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

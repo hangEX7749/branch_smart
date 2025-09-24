@@ -4,6 +4,13 @@
     "project_id": "flutter-hang-69560",
     "storage_bucket": "flutter-hang-69560.firebasestorage.app"
   },
+  "installed": {
+    "client_id": "487685048314-icljfja20mqfslcsars8tl9lg8mjvnef.apps.googleusercontent.com",
+    "project_id": "flutter-hang-69560",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+  },
   "client": [
     {
       "client_info": {

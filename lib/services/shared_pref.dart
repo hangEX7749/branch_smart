@@ -9,6 +9,8 @@ class SharedpreferenceHelper {
   static const String userPhoneNumberKey = 'USERPHONEKEY';
   static const int userStatusKey = 30;
   static const String userAddressKey = 'USERADDRESSKEY';
+  static const String profileImageDriveIdPrefix = "PROFILE_IMAGE_DRIVE_ID_";
+  static const String profileImageSyncStatusPrefix = "PROFILE_IMAGE_SYNC_";
 
   Future<bool> clearAllPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -70,6 +72,42 @@ class SharedpreferenceHelper {
   Future<String?> getUserAddress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userAddressKey);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //Google Drive Integration for Profile Image
+   // Save Google Drive file ID for profile image
+  Future<bool> saveProfileImageDriveId(String userId, String driveFileId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString("$profileImageDriveIdPrefix$userId", driveFileId);
+  }
+
+  Future<String?> getProfileImageDriveId(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("$profileImageDriveIdPrefix$userId");
+  }
+
+  Future<bool> removeProfileImageDriveId(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.remove("$profileImageDriveIdPrefix$userId");
+  }
+
+  // Save profile image sync status
+  Future<bool> saveProfileImageSyncStatus(String userId, bool isSynced) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool("$profileImageSyncStatusPrefix$userId", isSynced);
+  }
+
+  Future<bool> getProfileImageSyncStatus(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool("$profileImageSyncStatusPrefix$userId") ?? false;
+  }
+
+  // Clear all profile image related data (call this in your existing clearAllPref method)
+  Future<void> clearProfileImageData(String userId) async {
+    await removeProfileImageDriveId(userId);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove("$profileImageSyncStatusPrefix$userId");
   }
 }
 
