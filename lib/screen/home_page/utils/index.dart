@@ -14,6 +14,7 @@ export 'package:branch_comm/model/member_group_model.dart';
 export 'package:branch_comm/services/database/group_service.dart';
 export 'package:branch_comm/services/database/amenity_group_service.dart';
 export 'package:branch_comm/services/database/member_group_service.dart';
+export 'package:branch_comm/services/notification.dart';
 
 export 'package:branch_comm/screen/account_page/utils/index.dart';
 export 'package:branch_comm/widgets/bottom_navbar.dart';

@@ -13,6 +13,7 @@ class _HomeState extends State<Home> {
   final GroupService _groupService = GroupService();
   final AmenityGroupService _amenityGroupService = AmenityGroupService();
   final MemberGroupService _memberGroupService = MemberGroupService();
+  final NotificationService _notificationService = NotificationService();
 
   String? name, id, email, userGroupId;
   late Future<QuerySnapshot<Object?>> userData;
@@ -28,6 +29,8 @@ class _HomeState extends State<Home> {
 
   bool hasGroups = false;
   bool hasAmenities = false;
+
+  int unreadNotificationCount = 0; 
 
   Future<void> getTheSharedPref() async {
     final startTime = DateTime.now();
@@ -54,6 +57,9 @@ class _HomeState extends State<Home> {
 
       // ✅ Call fetchMemberGroup AFTER state is updated
       await _fetchMemberGroup(user.id);
+
+      // Listen for notifications
+      _listenToNotifications(user.id);
     }
   }
 
@@ -135,6 +141,17 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // Listen for notifications in real-time
+  void _listenToNotifications(String userId) {
+    _notificationService.getUnreadCountStream(userId).listen((msgCount) {
+      if (mounted) {
+        setState(() {
+          unreadNotificationCount = msgCount;
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -152,9 +169,44 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.black,
         elevation: 1,
         title: Text('Welcome, ${name ?? ""}', style: const TextStyle(color: Colors.white)),
-        actions: const [
-          Icon(Icons.notifications_none, color: Colors.white),
-          SizedBox(width: 16),
+        actions: [
+          GestureDetector(
+            //onTap: _navigateToNotifications,
+            child: Stack(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.notifications_none, color: Colors.white, size: 28),
+                ),
+                if (unreadNotificationCount > 0)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Text(
+                        unreadNotificationCount > 9 ? '9+' : '$unreadNotificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Padding(

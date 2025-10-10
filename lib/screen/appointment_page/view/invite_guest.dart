@@ -1,3 +1,5 @@
+import 'package:branch_comm/model/appointment_model.dart';
+import 'package:branch_comm/services/notification.dart';
 import 'package:branch_comm/services/shared_pref.dart';
 import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
@@ -75,8 +77,8 @@ class _InviteGuestState extends State<InviteGuest> {
         'user_id': userId,
         'venue': _venueController.text.trim(),
         'num_guests': int.tryParse(_guestNumController.text.trim()) ?? 0, 
-        'appointment_type': 10, // 10 = Invite
-        'status': 30, // 50 = Pending
+        'appointment_type': Appointment.invite, // 10 = Invite
+        'status': Appointment.pending, // 30 = Pending
         'invite_datetime': selectedDateTime,
         'expired_datetime': selectedDateTime!.add(const Duration(hours: 2)),
         'created_at': now,
@@ -84,6 +86,15 @@ class _InviteGuestState extends State<InviteGuest> {
       };
 
       final proceed = await _appointmentService.addAppointment(appointmentMap, appointmentMap['id'] as String);
+
+      if (mounted) {
+        await AppointmentNotifications.onAppointmentCreated(
+          context: context,
+          userId: userId!,
+          groupId: widget.groupId,
+          //appointmentDetails: '$appointmentType on ${DateFormat('MMM dd').format(selectedDate)}',
+        );
+      }
 
       if (!mounted) return;
 

@@ -23,7 +23,6 @@ class Appointment {
   static const int rejected = 90;
   static const int error = 99;
   
-
   Appointment({
     required this.id,
     required this.groupId,
