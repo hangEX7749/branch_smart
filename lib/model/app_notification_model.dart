@@ -10,6 +10,8 @@ class AppNotification {
   final int type;
   final bool isRead;
   final Map<String, dynamic>? data;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   //Notification code
   static const int general = 10;
@@ -18,7 +20,7 @@ class AppNotification {
   static const int wallPost = 40;
   static const int memberJoined = 50;
   static const int others = 90;
-
+  
   AppNotification({
     required this.id,
     required this.userId,
@@ -28,8 +30,8 @@ class AppNotification {
     required this.message,
     this.isRead = false,
     this.data,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory AppNotification.fromFirestore(DocumentSnapshot doc) {
@@ -42,14 +44,15 @@ class AppNotification {
       title: data['title'] ?? '',
       message: data['message'] ?? '',
       isRead: data['isRead'] ?? false,
-      createdAt: null,
-      updatedAt: null,
+      createdAt: (data['created_at'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       data: data['data'], 
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'userId': userId,
       'groupId': groupId,
       'type': type,
@@ -57,8 +60,8 @@ class AppNotification {
       'message': message,
       'isRead': isRead,
       'data': data,
-      'created_at': DateTime.now(),
-      'updated_at': DateTime.now(),
+      'created_at': createdAt,
+      'updated_at': updatedAt,
     };
   }
 

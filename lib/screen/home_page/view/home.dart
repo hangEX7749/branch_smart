@@ -1,4 +1,5 @@
 import 'package:branch_comm/screen/home_page/utils/index.dart';
+import 'package:branch_comm/screen/notification_page/view/notification_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -152,6 +153,16 @@ class _HomeState extends State<Home> {
     });
   }
 
+  // Navigate to notifications page
+  void _navigateToNotifications() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NotificationsPage(userId: id!, groupId: userGroupId!),
+      ),
+    );
+  }
+  
   @override
   void initState() {
     super.initState();
@@ -171,7 +182,7 @@ class _HomeState extends State<Home> {
         title: Text('Welcome, ${name ?? ""}', style: const TextStyle(color: Colors.white)),
         actions: [
           GestureDetector(
-            //onTap: _navigateToNotifications,
+            onTap: _navigateToNotifications,
             child: Stack(
               children: [
                 const Padding(

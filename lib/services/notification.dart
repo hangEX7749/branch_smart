@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:branch_comm/model/app_notification_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,7 +63,7 @@ class NotificationService {
     Query query = _firestore
         .collection(_notificationsCollection)
         .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
+        .orderBy('created_at', descending: true)
         .limit(50);
 
     if (groupId != null) {
@@ -245,12 +246,14 @@ class AppointmentNotifications {
       message: 'Your appointment has been cancelled: $appointmentDetails',
     );
 
-    NotificationService.showInAppNotification(
-      context,
-      title: 'Cancelled',
-      message: 'Your appointment has been cancelled',
-      type: AppNotification.appointment,
-    );
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Cancelled',
+        message: 'Your appointment has been cancelled',
+        type: AppNotification.appointment,
+      );
+    }
   }
 }
 
@@ -272,12 +275,14 @@ class BookingNotifications {
       //data: {'facilityName': facilityName, 'bookingDate': bookingDate},
     );
 
-    NotificationService.showInAppNotification(
-      context,
-      title: 'Booking Confirmed!',
-      message: 'Your facility booking has been confirmed',
-      type: AppNotification.booking,
-    );
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Booking Confirmed!',
+        message: 'Your facility booking has been confirmed',
+        type: AppNotification.booking,
+      );
+    }
   }
 
   static Future<void> onBookingFailed({
@@ -308,12 +313,14 @@ class BookingNotifications {
       message: 'Your booking for $facilityName has been cancelled',
     );
 
-    NotificationService.showInAppNotification(
-      context,
-      title: 'Cancelled',
-      message: 'Your booking has been cancelled',
-      type: AppNotification.booking,
-    );
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Cancelled',
+        message: 'Your booking has been cancelled',
+        type: AppNotification.booking,
+      );
+    }
   }
 }
 
@@ -332,12 +339,14 @@ class WallPostNotifications {
       message: 'Your post has been shared to the community wall',
     );
 
-    NotificationService.showInAppNotification(
-      context,
-      title: 'Success!',
-      message: 'Your post has been shared',
-      type: AppNotification.wallPost,
-    );
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Success!',
+        message: 'Your post has been shared',
+        type: AppNotification.wallPost,
+      );
+    }
   }
 
   static Future<void> onPostFailed({
@@ -369,11 +378,13 @@ class MemberNotifications {
       message: 'You have successfully joined $groupName',
     );
 
-    NotificationService.showInAppNotification(
-      context,
-      title: 'Welcome!',
-      message: 'You have joined $groupName',
-      type: AppNotification.memberJoined,
-    );
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Welcome!',
+        message: 'You have joined $groupName',
+        type: AppNotification.memberJoined,
+      );
+    }
   }
 }
