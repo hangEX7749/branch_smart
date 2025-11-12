@@ -1,4 +1,5 @@
 import 'package:branch_comm/model/booking_model.dart';
+import 'package:branch_comm/services/notification.dart';
 import 'package:branch_comm/services/database/amenity_group_service.dart';
 import 'package:branch_comm/services/database/amenity_service.dart';
 import 'package:branch_comm/services/database/booking_service.dart';
@@ -298,6 +299,16 @@ class _MakeBookingState extends State<MakeBooking> {
 
                     final proceed = await _bookingService.addBooking(bookingMap, bookingMap['id']);
                     
+                    if (context.mounted) {
+                      await BookingNotifications.onBookingCreated(
+                        context: context,
+                        userId: id!,
+                        groupId: widget.groupId,
+                        facilityName: selectedAmenity!,
+                        bookingDate: dateOnly,
+                      );
+                    }
+
                     if (!context.mounted) return;
 
                     if (!proceed) {
