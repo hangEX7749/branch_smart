@@ -1,4 +1,5 @@
 import 'package:branch_comm/model/member_group_model.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MemberGroupService {
@@ -14,6 +15,13 @@ class MemberGroupService {
   Future<QuerySnapshot> getMemberGroupByUserId(String userId) {
     return _memberGroups
       .where('user_id', isEqualTo: userId)
+      .where('status', isEqualTo: MemberGroup.active)
+      .get();
+  }
+
+  Future<QuerySnapshot> getAllMemberGroupsByGroupId(String groupId) {
+    return _memberGroups
+      .where('group_id', isEqualTo: groupId)
       .where('status', isEqualTo: MemberGroup.active)
       .get();
   }

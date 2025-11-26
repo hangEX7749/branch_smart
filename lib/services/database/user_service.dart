@@ -95,6 +95,18 @@ class UserService {
     return _users.where("group_id", isEqualTo: groupId).get();
   }
 
+  Future<QuerySnapshot> getAllUsersByUserIds(List<String> userIds) async {
+    //print("Fetching users for IDs: $userIds");
+
+    if (userIds.isEmpty) {
+      // Return an empty QuerySnapshot by querying with a non-matching sentinel id
+      // This performs a real Firestore query and yields an empty result instead of instantiating QuerySnapshot.
+      return await _users.where("id", whereIn: ['__no_matching_id__']).get();
+    }
+    
+    return await _users.where("id", whereIn: userIds).get();
+  }
+
   Stream<QuerySnapshot> getAllUsers() {
     return FirebaseFirestore.instance.collection("users").snapshots();
   }

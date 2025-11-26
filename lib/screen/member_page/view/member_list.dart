@@ -10,13 +10,30 @@ class MemberListPage extends StatefulWidget {
 }
 class _MemberListState extends State<MemberListPage> {
   final UserService userService = UserService();
+  final MemberGroupService memberGroupService = MemberGroupService();
   
   final TextEditingController _searchNameController = TextEditingController();
   String _searchQuery = "";
+  List<String> userIds = [];
+
+  Future<void> loadGroupMembers() async {
+    // Load members logic if needed
+    final QuerySnapshot memberGroup = await memberGroupService.getAllMemberGroupsByGroupId(widget.groupId ?? "");
+  
+    List<String> allUserId = memberGroup.docs
+      .map((doc) => doc['user_id'] as String)
+      .toList();
+
+    setState(() {
+        userIds = allUserId;
+        print('Member list page: $userIds');
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    loadGroupMembers();
     _searchNameController.addListener(() {
       setState(() {
         _searchQuery = _searchNameController.text.toLowerCase();
@@ -56,7 +73,7 @@ class _MemberListState extends State<MemberListPage> {
           ),
           Expanded(
             child: FutureBuilder<QuerySnapshot>(
-              future: userService.getAllUsersByGroupId(widget.groupId ?? ""),
+              future: userService.getAllUsersByUserIds(userIds),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -69,7 +86,19 @@ class _MemberListState extends State<MemberListPage> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text("No members found"));
                 }
-            
+
+
+
+              // final userIds = snapshot.data!.docs.map((doc) {
+              //   final data = doc.data() as Map<String, dynamic>;
+              //   return (data['user_id'] ?? doc.id).toString();
+              // }).toList();
+
+
+              // final usersSnapshot = userService.getAllUsersByUserIds(userIds);
+
+
+
                 final members = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   final name = (data['name'] ?? '').toString().toLowerCase();
@@ -120,14 +149,14 @@ class _MemberListState extends State<MemberListPage> {
         ],
       ),
       // Floating action button to add a new member
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to the add member page
-          Navigator.pushNamed(context, '/addMember', arguments: widget.groupId);
-        },
-        backgroundColor: Colors.indigo,
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Navigate to the add member page
+      //     Navigator.pushNamed(context, '/addMember', arguments: widget.groupId);
+      //   },
+      //   backgroundColor: Colors.indigo,
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }
