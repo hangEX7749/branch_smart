@@ -19,6 +19,8 @@ class AppNotification {
   static const int booking = 30;
   static const int wallPost = 40;
   static const int memberJoined = 50;
+  static const int memberJoinedConfirm = 51;
+  static const int memberJoinedFailed = 52;
   static const int others = 90;
   
   AppNotification({

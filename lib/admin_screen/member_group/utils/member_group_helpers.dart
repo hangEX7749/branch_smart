@@ -1,3 +1,4 @@
+import 'package:branch_comm/services/admin_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:branch_comm/model/member_group_model.dart';
 import 'package:branch_comm/services/database/member_group_service.dart';
@@ -44,18 +45,27 @@ class MemberGroupHelpers {
 
   static Future<void> updateMemberGroupStatus({
     required String docId,
-    required int newStatus,
+    required String userId,
+    required String groupId,
+    required int newStatus, 
     required MemberGroupService memberGroupService,
     required BuildContext context,
   }) async {
     try {
-      await memberGroupService.updateMemberGroupStatus(docId, newStatus);
+      memberGroupService.updateMemberGroupStatus(docId, newStatus);
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Status updated to ${getStatusText(newStatus)}'),
             backgroundColor: getStatusColor(newStatus),
           ),
+        );
+
+        AdminEditMemberGroupNotifications.updateMemberGroupStatus(
+          userId: userId,
+          groupId: groupId,
+          status: newStatus,
         );
       }
     } catch (e) {

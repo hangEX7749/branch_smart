@@ -9,6 +9,8 @@ class MemberGroupDialogs {
   static void showStatusChangeConfirmation(
     BuildContext context, {
     required String docId,
+    required String userId,
+    required String groupId,
     required int currentStatus,
     required int newStatus,
     required Map<String, dynamic> group,
@@ -71,6 +73,8 @@ class MemberGroupDialogs {
               Navigator.of(context).pop();
               MemberGroupHelpers.updateMemberGroupStatus(
                 docId: docId,
+                userId: userId,
+                groupId: groupId,
                 newStatus: newStatus,
                 memberGroupService: memberGroupService,
                 context: context,
@@ -89,6 +93,8 @@ class MemberGroupDialogs {
   static void showStatusChangeDialog(
     BuildContext context, {
     required String docId,
+    required String userId,
+    required String groupId,
     required int currentStatus,
     required Map<String, dynamic> group,
     required MemberGroupService memberGroupService,
@@ -110,6 +116,8 @@ class MemberGroupDialogs {
                 showStatusChangeConfirmation(
                   context,
                   docId: docId,
+                  userId: userId,
+                  groupId: groupId,
                   currentStatus: currentStatus,
                   newStatus: MemberGroup.pending,
                   group: group,
@@ -125,6 +133,8 @@ class MemberGroupDialogs {
                 showStatusChangeConfirmation(
                   context,
                   docId: docId,
+                  userId: userId,
+                  groupId: groupId,
                   currentStatus: currentStatus,
                   newStatus: MemberGroup.active,
                   group: group,
@@ -140,6 +150,8 @@ class MemberGroupDialogs {
                 showStatusChangeConfirmation(
                   context,
                   docId: docId,
+                  userId: userId,
+                  groupId: groupId,
                   currentStatus: currentStatus,
                   newStatus: MemberGroup.rejected,
                   group: group,
@@ -219,6 +231,8 @@ class MemberGroupDialogs {
               showStatusChangeDialog(
                 context,
                 docId: docId,
+                userId: userId,
+                groupId: groupId,
                 currentStatus: group['status'],
                 group: group,
                 memberGroupService: memberGroupService,

@@ -192,6 +192,8 @@ class _MemberGroupListState extends State<MemberGroupList> with NameFetchingMixi
                             MemberGroupDialogs.showStatusChangeConfirmation(
                               context,
                               docId: filteredGroups[index].id,
+                              userId: userId,
+                              groupId: groupId,
                               currentStatus: group['status'],
                               newStatus: int.parse(newStatus),
                               group: group,
