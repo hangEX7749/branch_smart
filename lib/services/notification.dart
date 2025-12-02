@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 import 'package:branch_comm/model/app_notification_model.dart';
+import 'package:branch_comm/services/database/group_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -359,6 +360,35 @@ class WallPostNotifications {
       message: 'Failed to share post: $error',
       type: AppNotification.general,
     );
+  }
+}
+
+// For Join Group Requests
+class MemberGroupNotifications {
+  static Future<void> onJoinRequestSubmitted({
+    required BuildContext context,
+    required String userId,
+    required String groupId,
+  }) async {
+
+    final groupName = await GroupService().getGroupNameById(groupId) ?? 'Null';
+
+    await NotificationService().createNotification(
+      userId: userId,
+      groupId: groupId,
+      type: AppNotification.memberJoined,
+      title: 'Join Request Submitted',
+      message: 'Your request to join $groupName has been submitted. Wait for admin approval.',
+    );
+
+    if (context.mounted) {
+      NotificationService.showInAppNotification(
+        context,
+        title: 'Request Submitted!',
+        message: 'Your request to join $groupName has been submitted',
+        type: AppNotification.memberJoined,
+      );
+    }
   }
 }
 

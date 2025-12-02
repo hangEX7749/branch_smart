@@ -26,7 +26,7 @@ class _MemberListState extends State<MemberListPage> {
 
     setState(() {
         userIds = allUserId;
-        print('Member list page: $userIds');
+        //print('Member list page: $userIds');
     });
   }
 

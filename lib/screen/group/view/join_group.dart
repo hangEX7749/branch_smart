@@ -1,7 +1,4 @@
-import 'package:branch_comm/screen/account_page/utils/index.dart';
-import 'package:branch_comm/model/member_group_model.dart';
-import 'package:branch_comm/services/database/group_service.dart';
-import 'package:branch_comm/services/database/member_group_service.dart';
+import 'package:branch_comm/screen/home_page/utils/index.dart';
 
 class JoinGroup extends StatefulWidget {
   const JoinGroup({super.key});
@@ -83,6 +80,15 @@ class _JoinGroupState extends State<JoinGroup> {
       };
 
       final proceed = await _memberGroupService.addMemberGroup(memberGroupMap);
+
+      if (mounted) {
+        await MemberGroupNotifications.onJoinRequestSubmitted(
+          context: context, 
+          userId: userId!, 
+          groupId: selectedGroupId!, 
+        );
+      }
+
 
       if (!mounted) return;
       if (!proceed) {

@@ -20,6 +20,14 @@ class GroupService {
     return null; // No group found with the given name
   }
 
+  Future<String?> getGroupNameById(String groupId) async {
+    final doc = await _groups.doc(groupId).get();
+    if (doc.exists) {
+      return doc['group_name'] as String?;
+    }
+    return null; // Group not found
+  }
+
   Future<bool> addGroup(Map<String, dynamic> groupData) async {
     try {
       final docRef = await _groups.add(groupData);
@@ -99,14 +107,5 @@ class GroupService {
     }
 
     return query.orderBy('created_at', descending: true).snapshots();
-  }
-
-  //get group name
-  Future<String?> getGroupNameById(String groupId) async {
-    final doc = await _groups.doc(groupId).get();
-    if (doc.exists) {
-      return doc['group_name'] as String?;
-    }
-    return null; // Group not found
   }
 }
