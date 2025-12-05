@@ -4,11 +4,15 @@ import 'package:branch_comm/model/wall_model.dart';
 import 'package:branch_comm/services/database/group_service.dart';
 import 'package:branch_comm/services/database/user_service.dart';
 import 'package:branch_comm/services/database/wall_servide.dart';
+import 'package:branch_comm/services/google_drive.dart';
+import 'package:branch_comm/services/shared_pref.dart';
 import 'package:branch_comm/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
 
 class WallPage extends StatefulWidget {
   final String? userId;
@@ -20,6 +24,9 @@ class WallPage extends StatefulWidget {
 }
 
 class _WallPageState extends State<WallPage> with NameFetchingMixin{
+  String? userId, groupId;
+  Uint8List? _avatarImageBytes;
+  
   final formKey = GlobalKey<FormState>();
   final WallService _wallService = WallService();
   final UserService _userService = UserService();
@@ -89,6 +96,96 @@ class _WallPageState extends State<WallPage> with NameFetchingMixin{
     });
   }
 
+  Future<void> _loadUserAvatarImage() async {
+    if (userId == null) {
+      // If userId is null, fall back directly to the default asset
+      final ByteData defaultByteData = await rootBundle.load('images/boy.jpg');
+      setState(() {
+        _avatarImageBytes = defaultByteData.buffer.asUint8List();
+      });
+      //print('Profile image loaded from: Default Asset (no userId)');
+      return;
+    }
+    
+    final localPath = '${(await getApplicationDocumentsDirectory()).path}/profile_$userId.jpg';
+    final localFile = File(localPath);
+    
+    Uint8List? imageData;
+    final driveFileId = await SharedpreferenceHelper().getProfileImageDriveId(userId!);
+    
+    //print('Drive File ID: $driveFileId');
+
+    if (driveFileId != null) {
+      try {
+        final driveService = GoogleDriveService();
+        await driveService.initialize();
+        imageData = await driveService.downloadImage(driveFileId);
+        //print('Profile image loaded from: Google Drive');
+      } catch (e) {
+        //print('Failed to load from Google Drive: $e');
+      }
+    }
+
+    // --- MODIFICATION STARTS HERE ---
+    Uint8List? finalImageBytes = imageData; // Try Drive first
+
+    if (finalImageBytes == null && localFile.existsSync()) {
+      // Try Local File second
+      finalImageBytes = localFile.readAsBytesSync();
+      //print('Profile image loaded from: Local File');
+    }
+
+    if (finalImageBytes == null) {
+      // If both failed, load the Default Asset image bytes
+      final ByteData defaultByteData = await rootBundle.load('images/boy.jpg');
+      finalImageBytes = defaultByteData.buffer.asUint8List();
+      //print('Profile image loaded from: Default Asset');
+    }
+
+    setState(() {
+      _avatarImageBytes = finalImageBytes;
+    });
+  }
+
+  Future<Widget> _getUserProfileImage() async {
+    final localPath = '${(await getApplicationDocumentsDirectory()).path}/profile_$userId.jpg';
+    final localFile = File(localPath);
+    
+    // Check for Google Drive synced image
+    final driveFileId = await SharedpreferenceHelper().getProfileImageDriveId(userId!);
+    ImageProvider? profileImage;
+
+    //print('Drive File ID: $driveFileId');
+
+    if (driveFileId != null) {
+      try {
+        // Try to load from Google Drive
+        final driveService = GoogleDriveService();
+        await driveService.initialize();
+        final imageData = await driveService.downloadImage(driveFileId);
+        
+        if (imageData != null) {
+          profileImage = MemoryImage(imageData);
+        }
+      } catch (e) {
+        //print('Failed to load from Google Drive: $e');
+      }
+    }
+
+    // Fallback to local file or default
+    profileImage ??= localFile.existsSync()
+        ? FileImage(localFile)
+        : const AssetImage('images/boy.jpg') as ImageProvider;
+
+
+    //print('Profile image loaded from: ${isFromDrive ? "Google Drive" : localFile.existsSync() ? "Local File" : "Default Asset"}');
+
+    return CircleAvatar(
+      backgroundImage: profileImage,
+      radius: 20,
+    );
+  }
+
   String _formatTimestamp(Timestamp? timestamp) {
     if (timestamp == null) return 'Just now';
     final now = DateTime.now();
@@ -106,6 +203,17 @@ class _WallPageState extends State<WallPage> with NameFetchingMixin{
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    userId = widget.userId;
+    groupId = widget.groupId;
+
+    if (userId != null) {
+      _loadUserAvatarImage();
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,7 +245,12 @@ class _WallPageState extends State<WallPage> with NameFetchingMixin{
                     CircleAvatar(
                       backgroundColor: Theme.of(context).primaryColor,
                       radius: 18,
-                      child: const Icon(Icons.person, color: Colors.white, size: 20),
+                      backgroundImage: _avatarImageBytes != null
+                          ? MemoryImage(_avatarImageBytes!)
+                          : null,
+                      child: _avatarImageBytes == null
+                          ? const Icon(Icons.person, color: Colors.white, size: 20)
+                          : null,
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -338,10 +451,32 @@ class _WallPageState extends State<WallPage> with NameFetchingMixin{
                             padding: const EdgeInsets.all(16),
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: Theme.of(context).primaryColor,
-                                  radius: 20,
-                                  child: const Icon(Icons.person, color: Colors.white, size: 20),
+                                FutureBuilder<Widget>(
+                                  future: _getUserProfileImage(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return CircleAvatar(
+                                        backgroundColor: Theme.of(context).primaryColor,
+                                        radius: 20,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      );
+                                    }
+                                    if (snapshot.hasError || !snapshot.hasData) {
+                                      return CircleAvatar(
+                                        backgroundColor: Theme.of(context).primaryColor,
+                                        radius: 20,
+                                        child: const Icon(
+                                          Icons.person, 
+                                          color: Colors.white, 
+                                          size: 20
+                                        ),
+                                      );
+                                    }
+                                    return snapshot.data!;
+                                  },
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
